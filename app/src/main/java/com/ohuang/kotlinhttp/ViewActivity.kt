@@ -35,11 +35,7 @@ class ViewActivity : AppCompatActivity() {
         }
 
         findViewById<View>(R.id.tv_button).setOnClickListener {
-            testApi.test3().requestOnActivity(this,{
-                tv_index.text = it.message
-            }){
-                tv_index.text = it.city
-            }
+            test()
         }
 
 
