@@ -4,6 +4,24 @@
 
 KtHttp 是一个基于 Kotlin 和 OkHttp 的轻量级 HTTP 客户端库 ，提供了简洁的 API 和多种响应处理方式（回调、协程、Flow）。
 
+## 依赖
+
+```groovy
+	dependencyResolutionManagement {
+		repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+		repositories {
+			mavenCentral()
+			maven { url 'https://jitpack.io' }
+		}
+	}
+```
+
+```groovy
+	dependencies {
+	        implementation 'com.github.ming123aaa:KtHttp:Tag'
+	}
+```
+
 ## 基本用法
 
 ### 1. HttpClient和Transform
@@ -98,11 +116,11 @@ class ViewActivity : AppCompatActivity() {
     }
     
     /**
-     * 测试正常请求
-     * requestOnMainThread在主线程回调
+     * request（）请求网络
+     * 
      */
     fun test(){
-        testApi.test().requestOnMainThread({//异常处理
+        testApi.test().request({//异常处理
             tv_index.text = it.message
         }){ //处理数据
             tv_index.text = it.city
@@ -110,6 +128,7 @@ class ViewActivity : AppCompatActivity() {
     }
 
     /**
+     * asFlow()可转成flow处理
      * flow
      */
   fun testFlow(){
@@ -125,6 +144,7 @@ class ViewActivity : AppCompatActivity() {
   }
 
     /**
+     * getResult（）通过协程请求并返回结果
      * 协程处理
      */
     fun testCoroutine() {
@@ -139,6 +159,7 @@ class ViewActivity : AppCompatActivity() {
     }
 
     /**
+     * getResultSafe（）通过协程请求并返回结果,自动对异常捕获
      * 协程2
      */
     fun testCoroutine2() {
