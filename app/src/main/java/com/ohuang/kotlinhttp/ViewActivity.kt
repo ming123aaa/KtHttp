@@ -1,18 +1,9 @@
 package com.ohuang.kotlinhttp
 
-import android.content.Intent
 import android.os.Bundle
-import android.text.Spannable
-import android.text.method.MovementMethod
-import android.util.Log
-import android.view.ActionMode
-import android.view.ActionMode.*
-import android.view.Menu
-import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -22,9 +13,7 @@ import com.ohuang.kthttp.call.asFlow
 import com.ohuang.kthttp.call.getResult
 import com.ohuang.kthttp.call.getResultSafe
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import java.io.File
 
 
 class ViewActivity : AppCompatActivity() {
@@ -46,7 +35,11 @@ class ViewActivity : AppCompatActivity() {
         }
 
         findViewById<View>(R.id.tv_button).setOnClickListener {
-            testCoroutine2()
+            testApi.test3().requestOnActivity(this,{
+                tv_index.text = it.message
+            }){
+                tv_index.text = it.city
+            }
         }
 
 

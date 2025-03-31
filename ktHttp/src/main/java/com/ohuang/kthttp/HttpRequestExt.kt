@@ -19,6 +19,23 @@ fun HttpRequest.urlParams(url: String, block:  RequestParams.() -> Unit = {}) {
     block.invoke(requestParams)
     urlParams(url, requestParams.map)
 }
+
+/**
+ * 默认
+ * get请求
+ */
+fun HttpRequest.get() {
+    builder.get()
+}
+
+/**
+ * post请求
+ *
+ * @param body
+ */
+fun HttpRequest.post(body: RequestBody) {
+    builder.post(body)
+}
 /**
  * 需要加参数的post请求
  */
@@ -39,8 +56,18 @@ class RequestParams(val map: MutableMap<String, String> = TreeMap<String, String
         map[key] = value
     }
 
+    fun addAllParams(params: Map<String, String>) {
+        params.entries.forEach {
+            map[it.key] = it.value
+        }
+    }
+
     fun removeParam(key: String) {
         map.remove(key)
+    }
+
+    fun removeAllParams() {
+        map.clear()
     }
 }
 

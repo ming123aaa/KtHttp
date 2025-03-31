@@ -64,6 +64,12 @@ object testApi {
         }
     }
 
+    fun test3(): MainHttpCall<CityInfo> {
+        return request<CityInfo>() {
+            url("http://192.168.2.67:8080/main/files/test.json")
+        }.toMainHttpCall()
+    }
+
 
     fun getFileHtml(): HttpCall<String> {
         /**

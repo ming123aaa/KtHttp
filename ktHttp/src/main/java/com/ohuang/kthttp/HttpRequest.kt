@@ -30,22 +30,6 @@ class HttpRequest() {
         this.url = url
     }
 
-    /**
-     * 默认
-     * get请求
-     */
-    fun get() {
-        builder.get()
-    }
-
-    /**
-     * post请求
-     * 想要加参数可以用用其他拓展函数
-     * @param body
-     */
-    fun post(body: RequestBody) {
-        builder.post(body)
-    }
 
     fun addHeader(key: String, value: String) {
         builder.addHeader(key, value)
