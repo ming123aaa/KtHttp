@@ -18,4 +18,5 @@ dependencies{
     api (libs.okhttp)
     api (libs.gson)
     api(libs.kotlinx.coroutines.core) // 核心库
+    api("org.jetbrains.kotlin:kotlin-stdlib:1.8.20")
 }
