@@ -11,6 +11,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.ohuang.kthttp.call.asFlow
 import com.ohuang.kthttp.call.getResult
+import com.ohuang.kthttp.call.getResultOrNull
 import com.ohuang.kthttp.call.getResultSafe
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
@@ -87,7 +88,7 @@ class ViewActivity : AppCompatActivity() {
     fun testCoroutine2() {
         lifecycleScope.launch {
                //可不需要处理异常
-                val cityInfo = testApi.test().getResultSafe(){ //处理异常
+                val cityInfo = testApi.test().getResultOrNull(){ //处理异常
                     tv_index.text = it.message
                 }
                 tv_index.text = cityInfo?.city

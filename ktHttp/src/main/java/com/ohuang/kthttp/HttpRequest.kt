@@ -9,13 +9,13 @@ import java.io.UnsupportedEncodingException
 import java.net.URLEncoder
 import java.util.TreeMap
 
-class HttpRequest() {
+class HttpRequest():KtHttpConfig {
     internal var builder = Request.Builder().get()
     private var url: String = ""
     internal var configs =HashMap<String,Any>()
 
 
-    fun setConfigs(name:String,value:Any){
+    override fun setConfigs(name:String, value:Any){
         this.configs[name]=value
     }
 

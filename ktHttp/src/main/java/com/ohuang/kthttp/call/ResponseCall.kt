@@ -1,12 +1,11 @@
 package com.ohuang.kthttp.call
 
-import com.ohuang.kthttp.HttpRequest
-import com.ohuang.kthttp.RequestParams
+import com.ohuang.kthttp.KtHttpConfig
 import okhttp3.Call
 import okhttp3.Response
 
 private const val key_responseLog = "ResponseLog"
-fun HttpRequest.logResponse(block: ResponseLog) {
+fun KtHttpConfig.logResponse(block: ResponseLog) {
     setConfigs(key_responseLog, block)
 }
 

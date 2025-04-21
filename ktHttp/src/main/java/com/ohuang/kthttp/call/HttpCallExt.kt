@@ -1,6 +1,8 @@
 package com.ohuang.kthttp.call
 
 
+import com.ohuang.kthttp.KtHttpConfig
+import com.ohuang.kthttp.KtHttpConfigImpl
 import com.ohuang.kthttp.Transform
 import com.ohuang.kthttp.transform.StringTransForm
 import kotlinx.coroutines.flow.Flow
@@ -18,6 +20,9 @@ class MapHttpCall<B, T>(call: HttpCall<T>, private val transform: (T) -> B) :
     }
 }
 
+/**
+ * 类型转化
+ */
 fun <T, B> HttpCall<T>.map(
     transform: (T) -> B
 ): HttpCall<B> {
@@ -68,6 +73,27 @@ suspend fun <T> HttpCall<T>.getResultSafe(
 }
 
 /**
+ * 协程获取结果
+ *  * @param isCancel 协程取消后是否 取消网络请求
+ * 出现异常时回调且返回null
+ */
+suspend fun <T> HttpCall<T>.getResultOrNull(
+    isCancel: Boolean = false,
+    block: (Throwable) -> Unit = {}
+): T? {
+    try {
+        return getResult(isCancel = isCancel)
+    } catch (e: Throwable) {
+        if (e is CancellationException) {//处理协程取消异常
+            throw e
+        } else {
+            block(e)
+        }
+    }
+    return null
+}
+
+/**
  *  转化为flow
  *  * @param isCancel 协程取消后是否 取消网络请求
  */
@@ -75,12 +101,20 @@ fun <T> HttpCall<T>.asFlow(isCancel: Boolean = false): Flow<T> {
     return kotlinx.coroutines.flow.flow { emit(getResult(isCancel = isCancel)) }
 }
 
-
-fun Call.toHttpCall(): HttpCall<Response> {
-    return ResponseCall(this, emptyMap())
+/**
+ *  转化为flow
+ *  * @param isCancel 协程取消后是否 取消网络请求
+ */
+fun <T> HttpCall<T>.asFlowOrNull(isCancel: Boolean = false): Flow<T?> {
+    return kotlinx.coroutines.flow.flow { emit(getResultOrNull(isCancel = isCancel)) }
 }
 
 
+fun Call.toHttpCall(block: KtHttpConfig.() -> Unit = {}): HttpCall<Response> {
+    val ktHttpConfigImpl = KtHttpConfigImpl()
+    block(ktHttpConfigImpl)
+    return ResponseCall(this, ktHttpConfigImpl.map)
+}
 
 fun HttpCall<Response>.toStringHttpCall(): HttpCall<String> {
     return toTransformCall(StringTransForm)
@@ -92,6 +126,7 @@ fun <T> HttpCall<Response>.toSafeTransformCall(
 ): HttpCall<T> {
     return Code200TransformCall(this, transform)
 }
+
 fun <T> HttpCall<Response>.toTransformCall(
     transform: Transform<T>
 ): HttpCall<T> {

@@ -165,7 +165,7 @@ class ViewActivity : AppCompatActivity() {
     fun testCoroutine2() {
         lifecycleScope.launch {
                //可不需要处理异常 如果出现异常数据返回为null
-                val cityInfo = testApi.test().getResultSafe(){ //处理异常
+                val cityInfo = testApi.test().getResultOrNull(){ //处理异常
                     tv_index.text = it.message
                 }
                 tv_index.text = cityInfo?.city

@@ -2,8 +2,6 @@ package com.ohuang.kthttp
 
 import com.ohuang.kthttp.call.HttpCall
 import com.ohuang.kthttp.call.ResponseCall
-
-import com.ohuang.kthttp.call.toHttpCall
 import com.ohuang.kthttp.call.toSafeTransformCall
 import com.ohuang.kthttp.call.toStringHttpCall
 import com.ohuang.kthttp.call.toTransformCall
@@ -52,12 +50,22 @@ class HttpClient(var okHttpClient: OkHttpClient = OkHttpClient()) {
     }
 
     /**
-     * 网络请求，获取对象内容
+     * 网络请求，获取对象内容,会检查code==200
      * @param transform 类型转换器
      * @param block 请求参数
      */
     fun <T> httpCall(transform: Transform<T>, block: HttpRequest.() -> Unit): HttpCall<T> {
         return responseCall(block).toSafeTransformCall(transform)
+    }
+
+
+    /**
+     * 网络请求，获取对象内容, 不检查code==200
+     * @param transform 类型转换器
+     * @param block 请求参数
+     */
+    fun <T> httpCallNotCheck(transform: Transform<T>, block: HttpRequest.() -> Unit): HttpCall<T> {
+        return responseCall(block).toTransformCall(transform)
     }
 }
 

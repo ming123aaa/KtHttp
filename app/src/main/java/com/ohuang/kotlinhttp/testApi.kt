@@ -9,6 +9,7 @@ import com.ohuang.kthttp.Transform
 import com.ohuang.kthttp.call.HttpCall
 import com.ohuang.kthttp.call.hookString
 import com.ohuang.kthttp.call.logResponse
+import com.ohuang.kthttp.call.logString
 import com.ohuang.kthttp.call.map
 import com.ohuang.kthttp.post
 import com.ohuang.kthttp.transform.transForm
@@ -25,8 +26,8 @@ object testApi {
      * 用于解析json数据，目前已实现了Gson解析  需要其他解析器可以自己实现Transform
      * 这里需要利用kotlin inline保留泛型类型
      */
-    inline fun <reified T> jsonTransForm(): Transform<T>{
-       return gson.transForm()
+    inline fun <reified T> jsonTransForm(): Transform<T> {
+        return gson.transForm()
     }
 
     /**
@@ -37,11 +38,11 @@ object testApi {
 //        val jsonTransForm = gson.transForm<HttpData<T>>(object : TypeToken<HttpData<T>>() {}.type) //为了解决  kotlin版本小于1.8.20 可能会导致泛型丢失变成Data<Any>
         return mHttpClient.httpCall<HttpData<T>>(jsonTransForm(), block)
             .map {
-                if (it.data==null){
-                  throw Exception(it.message)
+                if (it.data == null) {
+                    throw Exception(it.message)
                 }
                 return@map it.data!!
-               }
+            }
     }
 
     /**
@@ -50,8 +51,13 @@ object testApi {
     fun test(): HttpCall<CityInfo> {
         return request<CityInfo>() {
             url("http://192.168.2.83:8080/main/files/test.json")
-          hookString { it.replace("市","省") }
-
+            hookString { it.replace("市", "city") }
+            logString {
+                println("logString:$it")
+            }
+            logResponse {
+                println("logResponse$it")
+            }
 
         }
     }
@@ -81,6 +87,7 @@ object testApi {
             }
         }
     }
+
     fun getFileHtml2(): HttpCall<Response> {
         /**
          * 使用 responseCall 返回可处理 okhttp的response的Call
@@ -102,7 +109,6 @@ object testApi {
             }
         }
     }
-
 
 
     fun postFile(): HttpCall<String> {
