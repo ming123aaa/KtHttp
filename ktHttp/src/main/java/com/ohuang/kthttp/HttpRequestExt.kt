@@ -11,13 +11,21 @@ import java.util.TreeMap
 fun HttpRequest.urlParams(url: String, params: Map<String, String>) {
     url(UrlAddParams.urlAddParams(url, params))
 }
+
 /**
  * 需要加参数的url
  */
-fun HttpRequest.urlParams(url: String, block:  RequestParams.() -> Unit = {}) {
+fun HttpRequest.urlParams(url: String, block: RequestParams.() -> Unit = {}) {
     val requestParams = RequestParams()
     block.invoke(requestParams)
     urlParams(url, requestParams.map)
+}
+
+/**
+ * okhttp 请求的builder
+ */
+fun HttpRequest.okhttpBuilder(block: okhttp3.Request.Builder.() -> Unit) {
+    requestBuilderBlock(block)
 }
 
 /**
@@ -36,12 +44,14 @@ fun HttpRequest.get() {
 fun HttpRequest.post(body: RequestBody) {
     builder.post(body)
 }
+
 /**
  * 需要加参数的post请求
  */
 fun HttpRequest.post(params: Map<String, String>) {
     builder.post(getFormBody(params))
 }
+
 /**
  * 需要加参数的post请求
  */

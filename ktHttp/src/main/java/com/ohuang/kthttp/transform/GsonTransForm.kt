@@ -3,7 +3,6 @@ package com.ohuang.kthttp.transform
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.ohuang.kthttp.Transform
 import java.lang.reflect.Type
 /**
  * json解析

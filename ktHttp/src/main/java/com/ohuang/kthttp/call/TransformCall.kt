@@ -1,7 +1,7 @@
 package com.ohuang.kthttp.call
 
 import com.ohuang.kthttp.KtHttpConfig
-import com.ohuang.kthttp.Transform
+import com.ohuang.kthttp.transform.Transform
 import okhttp3.Response
 
 open class KtException(msg: String) : Exception(msg)
@@ -12,7 +12,7 @@ class TransformException(msg: String) : KtException(msg)
 private const val key_logString = "StringTransformLog"
 private const val key_hookString = "StringTransformHook"
 fun KtHttpConfig.logString(block: (String) -> Unit) {
-    setConfigs(key_logString, object : StringTransformLog {
+    setConfig(key_logString, object : StringTransformLog {
         override fun log(body: String, response: Response) {
             block(body)
         }
@@ -20,7 +20,7 @@ fun KtHttpConfig.logString(block: (String) -> Unit) {
 }
 
 fun KtHttpConfig.logString(block: StringTransformLog) {
-    setConfigs(key_logString, block)
+    setConfig(key_logString, block)
 }
 
 fun interface StringTransformLog {
@@ -37,7 +37,7 @@ private fun <T> HttpCall<T>.logString( body: String, response: Response) {
  * 拦截字符串，返回新的字符串
  */
 fun KtHttpConfig.hookString(block: (String) -> String) {
-    setConfigs(key_hookString, object : StringTransformHook{
+    setConfig(key_hookString, object : StringTransformHook{
         override fun hook(response: Response): String {
            return block(response.body!!.string())
         }
@@ -47,7 +47,7 @@ fun KtHttpConfig.hookString(block: (String) -> String) {
  * 拦截字符串，返回新的字符串
  */
 fun KtHttpConfig.hookString(block: StringTransformLog) {
-    setConfigs(key_hookString, block)
+    setConfig(key_hookString, block)
 }
 
 

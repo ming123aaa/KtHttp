@@ -1,21 +1,16 @@
 package com.ohuang.kthttp
 
-import okhttp3.Call
-import okhttp3.FormBody
-import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody
-import java.io.UnsupportedEncodingException
-import java.net.URLEncoder
-import java.util.TreeMap
 
 class HttpRequest():KtHttpConfig {
     internal var builder = Request.Builder().get()
-    private var url: String = ""
+    var url: String = ""
     internal var configs =HashMap<String,Any>()
 
-
-    override fun setConfigs(name:String, value:Any){
+    /**
+     * 设置配置，可通过HttpCall.getConfigs()拿到
+     */
+    override fun setConfig(name:String, value:Any){
         this.configs[name]=value
     }
 

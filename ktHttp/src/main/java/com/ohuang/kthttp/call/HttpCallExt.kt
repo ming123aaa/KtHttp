@@ -3,7 +3,7 @@ package com.ohuang.kthttp.call
 
 import com.ohuang.kthttp.KtHttpConfig
 import com.ohuang.kthttp.KtHttpConfigImpl
-import com.ohuang.kthttp.Transform
+import com.ohuang.kthttp.transform.Transform
 import com.ohuang.kthttp.transform.StringTransForm
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.suspendCancellableCoroutine

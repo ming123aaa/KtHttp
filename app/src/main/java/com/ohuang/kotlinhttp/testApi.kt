@@ -5,7 +5,7 @@ import com.ohuang.kotlinhttp.data.CityInfo
 import com.ohuang.kotlinhttp.data.HttpData
 import com.ohuang.kthttp.HttpClient
 import com.ohuang.kthttp.HttpRequest
-import com.ohuang.kthttp.Transform
+import com.ohuang.kthttp.transform.Transform
 import com.ohuang.kthttp.call.HttpCall
 import com.ohuang.kthttp.call.hookString
 import com.ohuang.kthttp.call.logResponse

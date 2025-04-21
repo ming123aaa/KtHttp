@@ -6,7 +6,7 @@ import okhttp3.Response
 
 private const val key_responseLog = "ResponseLog"
 fun KtHttpConfig.logResponse(block: ResponseLog) {
-    setConfigs(key_responseLog, block)
+    setConfig(key_responseLog, block)
 }
 
 
