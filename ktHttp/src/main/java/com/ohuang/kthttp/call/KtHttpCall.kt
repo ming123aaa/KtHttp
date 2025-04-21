@@ -15,4 +15,8 @@ abstract class  KtHttpCall<T,B>(protected val call: HttpCall<B>):HttpCall<T> {
     override fun isExecuted(): Boolean {
         return call.isExecuted()
     }
+
+    override fun getConfigs(): Map<String, Any> {
+        return call.getConfigs()
+    }
 }

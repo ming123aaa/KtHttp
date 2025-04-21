@@ -12,6 +12,12 @@ import java.util.TreeMap
 class HttpRequest() {
     internal var builder = Request.Builder().get()
     private var url: String = ""
+    internal var configs =HashMap<String,Any>()
+
+
+    fun setConfigs(name:String,value:Any){
+        this.configs[name]=value
+    }
 
     /**
      * 没提供的方法可以加

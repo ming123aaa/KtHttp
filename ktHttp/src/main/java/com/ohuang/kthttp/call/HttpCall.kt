@@ -11,5 +11,7 @@ interface HttpCall<T> {
     fun isCancelled(): Boolean
 
     fun isExecuted():Boolean
+
+    fun getConfigs():Map<String,Any>
 }
 

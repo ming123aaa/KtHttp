@@ -1,9 +1,12 @@
 package com.ohuang.kthttp
 
 import com.ohuang.kthttp.call.HttpCall
+import com.ohuang.kthttp.call.ResponseCall
 
 import com.ohuang.kthttp.call.toHttpCall
+import com.ohuang.kthttp.call.toSafeTransformCall
 import com.ohuang.kthttp.call.toStringHttpCall
+import com.ohuang.kthttp.call.toTransformCall
 import okhttp3.Call
 import okhttp3.OkHttpClient
 import okhttp3.Response
@@ -15,9 +18,19 @@ class HttpClient(var okHttpClient: OkHttpClient = OkHttpClient()) {
      * 网络请求，获取响应内容
      * @param block 请求参数
      */
+    @Deprecated(message="")
     fun newCall(block: HttpRequest.() -> Unit): Call {
+        val httpRequest = createHttpRequest(block)
+        return createCall(httpRequest)
+    }
+
+    private fun createHttpRequest(block: HttpRequest.() -> Unit): HttpRequest{
         val httpRequest = HttpRequest()
         block.invoke(httpRequest)
+        return httpRequest
+    }
+
+    private fun createCall(httpRequest:HttpRequest): Call{
         return okHttpClient.newCall(httpRequest.build())
     }
 
@@ -25,7 +38,8 @@ class HttpClient(var okHttpClient: OkHttpClient = OkHttpClient()) {
      * 网络请求，获取响应内容
      **/
     fun responseCall(block: HttpRequest.() -> Unit): HttpCall<Response> {
-        return ResponseCall(newCall(block))
+        val httpRequest = createHttpRequest(block)
+        return ResponseCall(createCall(httpRequest),httpRequest.configs)
     }
 
     /**
@@ -43,36 +57,11 @@ class HttpClient(var okHttpClient: OkHttpClient = OkHttpClient()) {
      * @param block 请求参数
      */
     fun <T> httpCall(transform: Transform<T>, block: HttpRequest.() -> Unit): HttpCall<T> {
-        return responseCall(block).toHttpCall(transform)
+        return responseCall(block).toSafeTransformCall(transform)
     }
 }
 
-class ResponseCall(private var call: Call) : HttpCall<Response> {
-    override fun request(error: (Throwable) -> Unit, callback: (Response) -> Unit) {
-        call.enqueue(object : okhttp3.Callback {
-            override fun onFailure(call: Call, e: java.io.IOException) {
-                error(e)
-            }
 
-            override fun onResponse(call: Call, response: okhttp3.Response) {
-                callback(response)
-            }
-        })
-    }
-
-    override fun cancel() {
-        call.cancel()
-    }
-
-    override fun isCancelled(): Boolean {
-
-        return call.isCanceled()
-    }
-
-    override fun isExecuted(): Boolean {
-        return call.isExecuted()
-    }
-}
 
 
 

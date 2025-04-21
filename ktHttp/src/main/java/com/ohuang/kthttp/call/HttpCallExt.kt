@@ -1,6 +1,6 @@
 package com.ohuang.kthttp.call
 
-import com.ohuang.kthttp.ResponseCall
+
 import com.ohuang.kthttp.Transform
 import com.ohuang.kthttp.transform.StringTransForm
 import kotlinx.coroutines.flow.Flow
@@ -47,6 +47,8 @@ suspend fun <T> HttpCall<T>.getResult(isCancel: Boolean = false): T {
 }
 
 /**
+ * 协程获取结果
+ *  * @param isCancel 协程取消后是否 取消网络请求
  * 出现异常时回调且返回null
  */
 suspend fun <T> HttpCall<T>.getResultSafe(
@@ -65,55 +67,32 @@ suspend fun <T> HttpCall<T>.getResultSafe(
     return null
 }
 
+/**
+ *  转化为flow
+ *  * @param isCancel 协程取消后是否 取消网络请求
+ */
 fun <T> HttpCall<T>.asFlow(isCancel: Boolean = false): Flow<T> {
     return kotlinx.coroutines.flow.flow { emit(getResult(isCancel = isCancel)) }
 }
 
 
-
 fun Call.toHttpCall(): HttpCall<Response> {
-    return ResponseCall(this)
+    return ResponseCall(this, emptyMap())
 }
 
-class CodeNo200Exception(msg: String) : Exception(msg)
-class EmptyBodyException(msg: String) : Exception(msg)
-class TransformException(msg: String) : Exception(msg)
 
-class TransformCall<T>(call: HttpCall<Response>, private val transform: Transform<T>) :
-    KtHttpCall<T, Response>(call) {
-    override fun request(error: (Throwable) -> Unit, callback: (T) -> Unit) {
-        call.request(error = error, callback = {
-            var value: T? = null
-            try {
-                val string = it.body!!.string()
-                if (it.code != 200) {
-                    throw CodeNo200Exception("code is not 200  $it")
-                }
-                if (string.isNotEmpty()) {
-                    value = transform.transform(string)
-                } else {
-                    throw EmptyBodyException("body string is Empty")
-                }
-                if (value == null) {
-                    throw TransformException("transform error")
-                }
-            } catch (e: Throwable) {
-                error(e)
-                return@request
-            }
-            callback(value)
-        })
-    }
-
-
-}
 
 fun HttpCall<Response>.toStringHttpCall(): HttpCall<String> {
-    return TransformCall(this, StringTransForm)
+    return toTransformCall(StringTransForm)
 }
 
 
-fun <T> HttpCall<Response>.toHttpCall(
+fun <T> HttpCall<Response>.toSafeTransformCall(
+    transform: Transform<T>
+): HttpCall<T> {
+    return Code200TransformCall(this, transform)
+}
+fun <T> HttpCall<Response>.toTransformCall(
     transform: Transform<T>
 ): HttpCall<T> {
     return TransformCall(this, transform)
