@@ -9,35 +9,41 @@ class CodeNo200Exception(msg: String) : KtException(msg)
 class EmptyBodyException(msg: String) : KtException(msg)
 class TransformException(msg: String) : KtException(msg)
 
-private const val key_logString = "StringTransformLog"
-private const val key_hookString = "StringTransformHook"
-fun KtHttpConfig.logString(block: (String) -> Unit) {
-    setConfig(key_logString, object : StringTransformLog {
-        override fun log(body: String, response: Response) {
+private const val key_showStringBody = "StringTransformShow"
+private const val key_hookStringBody = "StringTransformHook"
+
+/**
+ *  查看body
+ */
+fun KtHttpConfig.showStringBody(block: (String) -> Unit) {
+    setConfig(key_showStringBody, object : StringTransformShow {
+        override fun show(body: String, response: Response) {
             block(body)
         }
     })
 }
-
-fun KtHttpConfig.logString(block: StringTransformLog) {
-    setConfig(key_logString, block)
+/**
+ *  查看body转String的结果
+ */
+fun KtHttpConfig.showStringBody(block: StringTransformShow) {
+    setConfig(key_showStringBody, block)
 }
 
-fun interface StringTransformLog {
-    fun log(body: String, response: Response)
+fun interface StringTransformShow {
+    fun show(body: String, response: Response)
 }
-private fun <T> HttpCall<T>.logString( body: String, response: Response) {
-    val logString = getConfigs()[key_logString]
-    if (logString is StringTransformLog) {
-        logString.log( body, response)
+private fun <T> HttpCall<T>.showStringBody(body: String, response: Response) {
+    val logString = getConfigs()[key_showStringBody]
+    if (logString is StringTransformShow) {
+        logString.show( body, response)
     }
 }
 
 /**
- * 拦截字符串，返回新的字符串
+ * 拦截Body字符串，返回新的字符串
  */
-fun KtHttpConfig.hookString(block: (String) -> String) {
-    setConfig(key_hookString, object : StringTransformHook{
+fun KtHttpConfig.hookStringBody(block: (String) -> String) {
+    setConfig(key_hookStringBody, object : StringTransformHook{
         override fun hook(response: Response): String {
            return block(response.body!!.string())
         }
@@ -46,16 +52,16 @@ fun KtHttpConfig.hookString(block: (String) -> String) {
 /**
  * 拦截字符串，返回新的字符串
  */
-fun KtHttpConfig.hookString(block: StringTransformLog) {
-    setConfig(key_hookString, block)
+fun KtHttpConfig.hookStringBody(block: StringTransformShow) {
+    setConfig(key_hookStringBody, block)
 }
 
 
 fun interface StringTransformHook {
     fun hook(response: Response):String
 }
-private fun <T> HttpCall<T>.hookString(response: Response):String {
-    val logString = getConfigs()[key_hookString]
+private fun <T> HttpCall<T>.hookStringBody(response: Response):String {
+    val logString = getConfigs()[key_hookStringBody]
     if (logString is StringTransformHook) {
         return logString.hook(response)
     }
@@ -72,12 +78,11 @@ internal class Code200TransformCall<T>(
         call.request(error = error, callback = {
             var value: T? = null
             try {
-                val string =hookString(it)
-
-                logString(string, it)
                 if (it.code != 200) {
                     throw CodeNo200Exception("code is not 200  $it")
                 }
+                val string =hookStringBody(it)
+                showStringBody(string, it)
                 if (string.isNotEmpty()) {
                     value = transform.transform(string)
                 } else {
@@ -101,8 +106,8 @@ internal class TransformCall<T>(call: HttpCall<Response>, private val transform:
         call.request(error = error, callback = {
             var value: T? = null
             try {
-                val string = hookString(it)
-                logString(string, it)
+                val string = hookStringBody(it)
+                showStringBody(string, it)
                 value = transform.transform(string)
                 if (value == null) {
                     throw TransformException("transform error")

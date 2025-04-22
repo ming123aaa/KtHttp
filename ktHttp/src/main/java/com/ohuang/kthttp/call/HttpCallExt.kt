@@ -5,6 +5,8 @@ import com.ohuang.kthttp.KtHttpConfig
 import com.ohuang.kthttp.KtHttpConfigImpl
 import com.ohuang.kthttp.transform.Transform
 import com.ohuang.kthttp.transform.StringTransForm
+import com.ohuang.kthttp.wait.ThreadWait
+import com.ohuang.kthttp.wait.WaitResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.Call
@@ -116,19 +118,73 @@ fun Call.toHttpCall(block: KtHttpConfig.() -> Unit = {}): HttpCall<Response> {
     return ResponseCall(this, ktHttpConfigImpl.map)
 }
 
+/**
+ *  Response转化为String
+ */
 fun HttpCall<Response>.toStringHttpCall(): HttpCall<String> {
     return toTransformCall(StringTransForm)
 }
 
+/**
+ *  Response转化为String
+ */
+fun HttpCall<Response>.toStringHttpCallSafe(): HttpCall<String> {
+    return toSafeTransformCall(StringTransForm)
+}
 
+/**
+ * Response转化为指定类型   只对code==200时处理
+ */
 fun <T> HttpCall<Response>.toSafeTransformCall(
     transform: Transform<T>
 ): HttpCall<T> {
     return Code200TransformCall(this, transform)
 }
 
+/**
+ *  Response转化为指定类型
+ */
 fun <T> HttpCall<Response>.toTransformCall(
     transform: Transform<T>
 ): HttpCall<T> {
     return TransformCall(this, transform)
+}
+
+/**
+ *  会堵塞当前线程，更推荐使用getResult()
+ * 等待请求结果, 如果超时则抛出异常
+ * @param timeOut 超时时间，单位毫秒，0表示无限制
+ */
+fun <T> HttpCall<T>.waitResult(timeOut: Long = 0): T {
+    val threadWait = ThreadWait<T>()
+    request({
+        threadWait.setResult(WaitResult(it))
+    }, {
+        threadWait.setResult(WaitResult(it))
+    })
+    val waitResult = threadWait.waitResult(timeOut)
+    if (waitResult != null) {
+        if (waitResult.isSuccess) {
+            return waitResult.result
+        } else {
+            throw waitResult.throwable
+        }
+    }
+    throw Exception("waitResult error")
+}
+
+/**
+ * 会堵塞当前线程，更推荐使用getResultOrNull()
+ * 等待请求结果, 如果超时则抛出异常
+ * @param timeOut 超时时间，单位毫秒，0表示无限制
+ *
+ */
+fun <T> HttpCall<T>.waitResultOrNull(timeOut: Long = 0, block: (Throwable) -> Unit = {}): T? {
+    return try {
+        waitResult(timeOut = timeOut)
+    } catch (e: Throwable) {
+        block(e)
+        null
+    }
+
 }

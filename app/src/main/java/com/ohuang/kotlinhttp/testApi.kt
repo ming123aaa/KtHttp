@@ -7,11 +7,13 @@ import com.ohuang.kthttp.HttpClient
 import com.ohuang.kthttp.HttpRequest
 import com.ohuang.kthttp.transform.Transform
 import com.ohuang.kthttp.call.HttpCall
-import com.ohuang.kthttp.call.hookString
-import com.ohuang.kthttp.call.logResponse
-import com.ohuang.kthttp.call.logString
+import com.ohuang.kthttp.call.hookResponse
+import com.ohuang.kthttp.call.hookStringBody
+import com.ohuang.kthttp.call.showResponse
+import com.ohuang.kthttp.call.showStringBody
 import com.ohuang.kthttp.call.map
 import com.ohuang.kthttp.post
+
 import com.ohuang.kthttp.transform.transForm
 import com.ohuang.kthttp.urlParams
 import okhttp3.Call
@@ -51,12 +53,19 @@ object testApi {
     fun test(): HttpCall<CityInfo> {
         return request<CityInfo>() {
             url("http://192.168.2.83:8080/main/files/test.json")
-            hookString { it.replace("市", "city") }
-            logString {
-                println("logString:$it")
+            hookStringBody {
+                println("hookStringBody:$it")
+                it.replace("市", "city")
             }
-            logResponse {
-                println("logResponse$it")
+            showStringBody {
+                println("showStringBody:$it")
+            }
+            hookResponse{
+                println("hookResponse$it")
+                return@hookResponse it
+            }
+            showResponse {
+                println("showResponse$it")
             }
 
         }

@@ -4,6 +4,7 @@ import com.ohuang.kthttp.call.HttpCall
 import com.ohuang.kthttp.call.ResponseCall
 import com.ohuang.kthttp.call.toSafeTransformCall
 import com.ohuang.kthttp.call.toStringHttpCall
+import com.ohuang.kthttp.call.toStringHttpCallSafe
 import com.ohuang.kthttp.call.toTransformCall
 import com.ohuang.kthttp.transform.Transform
 import okhttp3.Call
@@ -17,19 +18,19 @@ class HttpClient(var okHttpClient: OkHttpClient = OkHttpClient()) {
      * 网络请求，获取响应内容
      * @param block 请求参数
      */
-    @Deprecated(message="")
+    @Deprecated(message = "")
     fun newCall(block: HttpRequest.() -> Unit): Call {
         val httpRequest = createHttpRequest(block)
         return createCall(httpRequest)
     }
 
-    private fun createHttpRequest(block: HttpRequest.() -> Unit): HttpRequest{
+    private fun createHttpRequest(block: HttpRequest.() -> Unit): HttpRequest {
         val httpRequest = HttpRequest()
         block.invoke(httpRequest)
         return httpRequest
     }
 
-    private fun createCall(httpRequest:HttpRequest): Call{
+    private fun createCall(httpRequest: HttpRequest): Call {
         return okHttpClient.newCall(httpRequest.build())
     }
 
@@ -38,20 +39,20 @@ class HttpClient(var okHttpClient: OkHttpClient = OkHttpClient()) {
      **/
     fun responseCall(block: HttpRequest.() -> Unit): HttpCall<Response> {
         val httpRequest = createHttpRequest(block)
-        return ResponseCall(createCall(httpRequest),httpRequest.configs)
+        return ResponseCall(createCall(httpRequest), httpRequest.configs)
     }
 
     /**
      * 网络请求，获取字符串内容
-     *
      * @param block 请求参数
      */
     fun stringCall(block: HttpRequest.() -> Unit): HttpCall<String> {
         return responseCall(block).toStringHttpCall()
     }
 
+
     /**
-     * 网络请求，获取对象内容,会检查code==200
+     * 网络请求，获取对象内容, code==200才会正确返回结果,若不想检查code==200 可使用 httpCallNotCheck()
      * @param transform 类型转换器
      * @param block 请求参数
      */
@@ -60,14 +61,7 @@ class HttpClient(var okHttpClient: OkHttpClient = OkHttpClient()) {
     }
 
 
-    /**
-     * 网络请求，获取对象内容, 不检查code==200
-     * @param transform 类型转换器
-     * @param block 请求参数
-     */
-    fun <T> httpCallNotCheck(transform: Transform<T>, block: HttpRequest.() -> Unit): HttpCall<T> {
-        return responseCall(block).toTransformCall(transform)
-    }
+
 }
 
 

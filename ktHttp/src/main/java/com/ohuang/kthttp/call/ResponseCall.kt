@@ -4,21 +4,41 @@ import com.ohuang.kthttp.KtHttpConfig
 import okhttp3.Call
 import okhttp3.Response
 
-private const val key_responseLog = "ResponseLog"
-fun KtHttpConfig.logResponse(block: ResponseLog) {
-    setConfig(key_responseLog, block)
+private const val key_responseShow = "ResponseShow"
+
+/**
+ *  获取Response
+ */
+fun KtHttpConfig.showResponse(block: ResponseShow) {
+    setConfig(key_responseShow, block)
 }
 
-
-fun interface ResponseLog {
-    fun log(response: Response)
+fun interface ResponseShow {
+    fun show(response: Response)
 }
 
-private fun ResponseCall.logResponse(response: Response) {
-    val responseLog = getConfigs().get(key_responseLog)
-    if (responseLog is ResponseLog) {
-        responseLog.log(response)
+private fun ResponseCall.showResponse(response: Response) {
+    val responseLog = getConfigs()[key_responseShow]
+    if (responseLog is ResponseShow) {
+        responseLog.show(response)
     }
+}
+
+private const val key_responseHook = "ResponseHook"
+fun KtHttpConfig.hookResponse(block: ResponseHook) {
+    setConfig(key_responseHook, block)
+}
+
+fun interface ResponseHook {
+    fun hook(response: Response): Response
+}
+
+private fun ResponseCall.hookResponse(response: Response): Response {
+    val responseLog = getConfigs()[key_responseHook]
+    if (responseLog is ResponseHook) {
+        return responseLog.hook(response)
+    }
+    return response
 }
 
 class ResponseCall(private var call: Call, private val configs: Map<String, Any>) :
@@ -30,7 +50,7 @@ class ResponseCall(private var call: Call, private val configs: Map<String, Any>
             }
 
             override fun onResponse(call: Call, response: okhttp3.Response) {
-                logResponse(response)
+                showResponse(hookResponse(response))
                 callback(response)
             }
         })

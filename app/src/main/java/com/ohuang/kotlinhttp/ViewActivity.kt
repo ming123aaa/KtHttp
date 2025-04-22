@@ -12,7 +12,6 @@ import androidx.lifecycle.lifecycleScope
 import com.ohuang.kthttp.call.asFlow
 import com.ohuang.kthttp.call.getResult
 import com.ohuang.kthttp.call.getResultOrNull
-import com.ohuang.kthttp.call.getResultSafe
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
@@ -34,12 +33,9 @@ class ViewActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
         findViewById<View>(R.id.tv_button).setOnClickListener {
             test()
         }
-
-
     }
 
     /**
@@ -92,7 +88,6 @@ class ViewActivity : AppCompatActivity() {
                     tv_index.text = it.message
                 }
                 tv_index.text = cityInfo?.city
-
         }
     }
 
