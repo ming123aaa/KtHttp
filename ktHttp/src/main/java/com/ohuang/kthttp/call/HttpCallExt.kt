@@ -115,7 +115,7 @@ fun <T> HttpCall<T>.asFlowOrNull(isCancel: Boolean = false): Flow<T?> {
 fun Call.toHttpCall(block: KtHttpConfig.() -> Unit = {}): HttpCall<Response> {
     val ktHttpConfigImpl = KtHttpConfigImpl()
     block(ktHttpConfigImpl)
-    return ResponseCall(this, ktHttpConfigImpl.map)
+    return ResponseCall(this, ktHttpConfigImpl.configs)
 }
 
 /**
@@ -130,6 +130,10 @@ fun HttpCall<Response>.toStringHttpCall(): HttpCall<String> {
  */
 fun HttpCall<Response>.toStringHttpCallSafe(): HttpCall<String> {
     return toSafeTransformCall(StringTransForm)
+}
+
+fun<T> HttpCall<String>.toTransform(transform: Transform<T>):HttpCall<T>{
+    return StringTransformCall(this,transform)
 }
 
 /**

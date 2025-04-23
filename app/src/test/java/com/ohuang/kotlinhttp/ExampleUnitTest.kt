@@ -4,6 +4,7 @@ import com.ohuang.kthttp.call.asFlow
 import com.ohuang.kthttp.call.getResult
 import com.ohuang.kthttp.call.getResultSafe
 import com.ohuang.kthttp.call.waitResult
+import com.ohuang.kthttp.call.waitResultOrNull
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
@@ -22,7 +23,7 @@ import org.junit.Assert.*
 class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
-        var waitResult = testApi.test().waitResult()
+        var waitResult = testApi.test().waitResultOrNull ()
         println("waitResult=$waitResult")
     }
 }

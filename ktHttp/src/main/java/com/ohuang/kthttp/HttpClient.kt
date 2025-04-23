@@ -24,8 +24,8 @@ class HttpClient(var okHttpClient: OkHttpClient = OkHttpClient()) {
         return createCall(httpRequest)
     }
 
-    private fun createHttpRequest(block: HttpRequest.() -> Unit): HttpRequest {
-        val httpRequest = HttpRequest()
+    private fun createHttpRequest(block: KtHttpRequest.() -> Unit): KtHttpRequest {
+        val httpRequest = KtHttpRequest()
         block.invoke(httpRequest)
         return httpRequest
     }
@@ -37,7 +37,7 @@ class HttpClient(var okHttpClient: OkHttpClient = OkHttpClient()) {
     /**
      * 网络请求，获取响应内容
      **/
-    fun responseCall(block: HttpRequest.() -> Unit): HttpCall<Response> {
+    fun responseCall(block: KtHttpRequest.() -> Unit): HttpCall<Response> {
         val httpRequest = createHttpRequest(block)
         return ResponseCall(createCall(httpRequest), httpRequest.configs)
     }
@@ -46,7 +46,7 @@ class HttpClient(var okHttpClient: OkHttpClient = OkHttpClient()) {
      * 网络请求，获取字符串内容
      * @param block 请求参数
      */
-    fun stringCall(block: HttpRequest.() -> Unit): HttpCall<String> {
+    fun stringCall(block: KtHttpRequest.() -> Unit): HttpCall<String> {
         return responseCall(block).toStringHttpCall()
     }
 
@@ -56,7 +56,7 @@ class HttpClient(var okHttpClient: OkHttpClient = OkHttpClient()) {
      * @param transform 类型转换器
      * @param block 请求参数
      */
-    fun <T> httpCall(transform: Transform<T>, block: HttpRequest.() -> Unit): HttpCall<T> {
+    fun <T> httpCall(transform: Transform<T>, block: KtHttpRequest.() -> Unit): HttpCall<T> {
         return responseCall(block).toSafeTransformCall(transform)
     }
 

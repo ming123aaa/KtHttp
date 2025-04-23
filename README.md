@@ -31,6 +31,22 @@ object TestApi {
     var mHttpClient = HttpClient() //初始化httpClient,可以选择使用自己创建的OkhttpClient
     var gson = Gson()
 
+
+    /**
+     * 请求封装的数据
+     * 这里需要利用kotlin inline保留泛型类型
+     */
+    inline fun <reified T> request(noinline block: KtHttpRequest.() -> Unit): HttpCall<T> {
+//        val jsonTransForm = gson.transForm<HttpData<T>>(object : TypeToken<HttpData<T>>() {}.type) //为了解决  kotlin版本小于1.8.20 可能会导致泛型丢失变成Data<Any>
+        return mHttpClient.httpCall<HttpData<T>>(jsonTransForm(), block)
+            .map {
+                if (it.data == null) {
+                    throw Exception(it.message)
+                }
+                return@map it.data!!
+            }
+    }
+
     /**
      * 用于解析json数据，目前已实现了Gson解析  需要其他解析器可以自己实现Transform
      * 这里需要利用kotlin inline保留泛型类型
@@ -88,6 +104,35 @@ object TestApi {
             addHeader("Content-Type", "application/x-www-form-urlencoded")//支持添加头部
             requestBuilderBlock { //需要其他功能可自己实现，可以直接使用okhttp的RequestBuilder
                 this.header("Content-Type", "application/x-www-form-urlencoded")
+            }
+
+        }
+    }
+
+
+    /**
+     *   一些其他的方法
+     */
+    fun test(): HttpCall<CityInfo> {
+        return mHttpClient.stringCall {
+            post()
+            url("http://192.168.2.83:8080/main/files/test.json")
+            hookResponse{ //可修改Response
+                println("hookResponse$it")
+                return@hookResponse it
+            }
+            onResponse { //回调Response
+                println("showResponse$it")
+            }
+            hookStringBody { //可修改字符串
+                println("hookStringBody:$it")
+                return@hookStringBody it
+            }
+            onStringBody { //回调字符串
+                println("showStringBody:$it")
+            }
+            onError{  //出现错误回调
+                println("onError:$it")
             }
 
         }
@@ -174,7 +219,6 @@ class ViewActivity : AppCompatActivity() {
     }
 
 }
-
 ```
 
 

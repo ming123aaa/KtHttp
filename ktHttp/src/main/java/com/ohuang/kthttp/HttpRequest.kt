@@ -2,17 +2,9 @@ package com.ohuang.kthttp
 
 import okhttp3.Request
 
-class HttpRequest():KtHttpConfig {
+open class HttpRequest() {
     internal var builder = Request.Builder().get()
     var url: String = ""
-    internal var configs =HashMap<String,Any>()
-
-    /**
-     * 设置配置，可通过HttpCall.getConfigs()拿到
-     */
-    override fun setConfig(name:String, value:Any){
-        this.configs[name]=value
-    }
 
     /**
      * 没提供的方法可以加

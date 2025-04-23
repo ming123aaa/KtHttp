@@ -12,7 +12,7 @@ import com.ohuang.kthttp.transform.Transform
  * code==200 才会正确返回结果
  * @param block 请求参数
  */
-fun HttpClient.stringCallSafe(block: HttpRequest.() -> Unit): HttpCall<String> {
+fun HttpClient.stringCallSafe(block: KtHttpRequest.() -> Unit): HttpCall<String> {
     return responseCall(block).toStringHttpCallSafe()
 }
 
@@ -22,6 +22,6 @@ fun HttpClient.stringCallSafe(block: HttpRequest.() -> Unit): HttpCall<String> {
  * @param transform 类型转换器
  * @param block 请求参数
  */
-fun <T> HttpClient.httpCallNotCheck(transform: Transform<T>, block: HttpRequest.() -> Unit): HttpCall<T> {
+fun <T> HttpClient.httpCallNotCheck(transform: Transform<T>, block: KtHttpRequest.() -> Unit): HttpCall<T> {
     return responseCall(block).toTransformCall(transform)
 }

@@ -5,13 +5,15 @@ import com.ohuang.kotlinhttp.data.CityInfo
 import com.ohuang.kotlinhttp.data.HttpData
 import com.ohuang.kthttp.HttpClient
 import com.ohuang.kthttp.HttpRequest
+import com.ohuang.kthttp.KtHttpRequest
 import com.ohuang.kthttp.transform.Transform
 import com.ohuang.kthttp.call.HttpCall
 import com.ohuang.kthttp.call.hookResponse
 import com.ohuang.kthttp.call.hookStringBody
-import com.ohuang.kthttp.call.showResponse
-import com.ohuang.kthttp.call.showStringBody
+import com.ohuang.kthttp.call.onResponse
+import com.ohuang.kthttp.call.onStringBody
 import com.ohuang.kthttp.call.map
+import com.ohuang.kthttp.call.onError
 import com.ohuang.kthttp.post
 
 import com.ohuang.kthttp.transform.transForm
@@ -36,7 +38,7 @@ object testApi {
      * 请求封装的数据
      * 这里需要利用kotlin inline保留泛型类型
      */
-    inline fun <reified T> request(noinline block: HttpRequest.() -> Unit): HttpCall<T> {
+    inline fun <reified T> request(noinline block: KtHttpRequest.() -> Unit): HttpCall<T> {
 //        val jsonTransForm = gson.transForm<HttpData<T>>(object : TypeToken<HttpData<T>>() {}.type) //为了解决  kotlin版本小于1.8.20 可能会导致泛型丢失变成Data<Any>
         return mHttpClient.httpCall<HttpData<T>>(jsonTransForm(), block)
             .map {
@@ -52,21 +54,26 @@ object testApi {
      */
     fun test(): HttpCall<CityInfo> {
         return request<CityInfo>() {
+
             url("http://192.168.2.83:8080/main/files/test.json")
-            hookStringBody {
-                println("hookStringBody:$it")
-                it.replace("市", "city")
-            }
-            showStringBody {
-                println("showStringBody:$it")
-            }
-            hookResponse{
+            hookResponse{ //可修改Response
                 println("hookResponse$it")
                 return@hookResponse it
             }
-            showResponse {
+            onResponse { //回调Response
                 println("showResponse$it")
             }
+            hookStringBody { //可修改字符串
+                println("hookStringBody:$it")
+                 return@hookStringBody it
+            }
+            onStringBody { //回调字符串
+                println("showStringBody:$it")
+            }
+            onError{  //出现错误回调
+                println("onError:$it")
+            }
+
 
         }
     }
