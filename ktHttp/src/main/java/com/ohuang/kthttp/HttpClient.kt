@@ -11,7 +11,24 @@ import okhttp3.Call
 import okhttp3.OkHttpClient
 import okhttp3.Response
 
-class HttpClient(var okHttpClient: OkHttpClient = OkHttpClient()) {
+/**
+ *
+ * @param okHttpClient okhttp客户端
+ * @param globalKtConfigCall 全局配置，会被请求配置和强制配置给覆盖
+ * @param forceKtConfigCall 强制配置, 会覆盖全局配置和请求配置
+ */
+class HttpClient(
+    var okHttpClient: OkHttpClient = OkHttpClient(),
+    globalKtConfigCall: KtHttpConfig.() -> Unit = {},
+    forceKtConfigCall:KtHttpConfig.() -> Unit = {}
+) {
+    private var globalKtConfigImpl = KtHttpConfigImpl()
+    private var forceKtConfigImpl = KtHttpConfigImpl()
+
+    init {
+        globalKtConfigCall.invoke(globalKtConfigImpl)
+        forceKtConfigCall.invoke(forceKtConfigImpl)
+    }
 
     /**
      * 返回okhttp的Call 不封装
@@ -25,8 +42,9 @@ class HttpClient(var okHttpClient: OkHttpClient = OkHttpClient()) {
     }
 
     private fun createHttpRequest(block: KtHttpRequest.() -> Unit): KtHttpRequest {
-        val httpRequest = KtHttpRequest()
+        val httpRequest = KtHttpRequest(globalKtConfigImpl)
         block.invoke(httpRequest)
+        httpRequest.configs.putAll(forceKtConfigImpl.configs)
         return httpRequest
     }
 
@@ -59,7 +77,6 @@ class HttpClient(var okHttpClient: OkHttpClient = OkHttpClient()) {
     fun <T> httpCall(transform: Transform<T>, block: KtHttpRequest.() -> Unit): HttpCall<T> {
         return responseCall(block).toSafeTransformCall(transform)
     }
-
 
 
 }

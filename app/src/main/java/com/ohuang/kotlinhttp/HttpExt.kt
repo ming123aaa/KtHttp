@@ -9,6 +9,8 @@ import com.ohuang.kthttp.call.EmptyBodyException
 import com.ohuang.kthttp.call.HttpCall
 import com.ohuang.kthttp.call.KtHttpCall
 import com.ohuang.kthttp.call.getResultSafe
+import com.ohuang.kthttp.call.waitResult
+import com.ohuang.kthttp.call.waitResultOrNull
 import kotlinx.coroutines.launch
 import okhttp3.Response
 import java.io.File
@@ -86,6 +88,14 @@ class MainHttpCall<T>(call: HttpCall<T>) : KtHttpCall<T, T>(call) {
 
     override fun request(error: (Throwable) -> Unit, callback: (T) -> Unit) {
         call.request(error, callback)
+    }
+
+    fun waitResult(timeOut: Long = 0): T {
+        return call.waitResult(timeOut)
+    }
+
+    fun waitResultOrNull(timeOut: Long = 0): T? {
+        return call.waitResultOrNull(timeOut)
     }
 
 

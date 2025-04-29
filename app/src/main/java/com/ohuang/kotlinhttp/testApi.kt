@@ -23,7 +23,14 @@ import okhttp3.Response
 import java.io.File
 
 object testApi {
-    var mHttpClient = HttpClient()
+    var mHttpClient = HttpClient(globalKtConfigCall = {
+        onStringBody {
+            println("全局onStringBody:$it")
+        }
+    }, forceKtConfigCall = {
+        onError { e,r->
+            println("强制onError:e=$e   url=${r?.request?.url}") }
+    })
     var gson = Gson()
 
     /**
@@ -55,7 +62,7 @@ object testApi {
     fun test(): HttpCall<CityInfo> {
         return request<CityInfo>() {
 
-            url("http://192.168.2.83:8080/main/files/test.json")
+            url("http://192.168.2.103:8080/main/files/test.json")
             hookResponse{ //可修改Response
                 println("hookResponse$it")
                 return@hookResponse it
@@ -67,9 +74,7 @@ object testApi {
                 println("hookStringBody:$it")
                  return@hookStringBody it
             }
-            onStringBody { //回调字符串
-                println("showStringBody:$it")
-            }
+
             onError{  //出现错误回调
                 println("onError:$it")
             }
@@ -82,13 +87,13 @@ object testApi {
     fun test2(): HttpCall<HttpData<CityInfo>> {
         //使用 httpCall 返回对象
         return mHttpClient.httpCall<HttpData<CityInfo>>(jsonTransForm()) {
-            url("http://192.168.2.83:8080/main/files/test.json")
+            url("http://192.168.2.103:8080/main/files/test.json")
         }
     }
 
     fun test3(): MainHttpCall<CityInfo> {
         return request<CityInfo>() {
-            url("http://192.168.2.83:8080/main/files/test.json")
+            url("http://192.168.2.103:8080/main/files/test.json")
         }.toMainHttpCall()
     }
 
@@ -98,7 +103,7 @@ object testApi {
          * 使用 stringCall 返回可处理 字符串数据的Call
          */
         return mHttpClient.stringCall {
-            urlParams("http://192.168.2.83:8080/main/index") { //给url添加参数
+            urlParams("http://192.168.2.103:8080/main/index") { //给url添加参数
                 addParam("path", "/base.apk.cache")
             }
         }
@@ -109,7 +114,7 @@ object testApi {
          * 使用 responseCall 返回可处理 okhttp的response的Call
          */
         return mHttpClient.responseCall {
-            urlParams("http://192.168.2.83:8080/main/index") { //给url添加参数
+            urlParams("http://192.168.2.103:8080/main/index") { //给url添加参数
                 addParam("path", "/base.apk.cache")
             }
         }
@@ -120,7 +125,7 @@ object testApi {
          * 使用 newCall 返回okhttp的Call
          */
         return mHttpClient.newCall {
-            urlParams("http://192.168.2.83:8080/main/index") { //给url添加参数
+            urlParams("http://192.168.2.103:8080/main/index") { //给url添加参数
                 addParam("path", "/base.apk.cache")
             }
         }
@@ -129,7 +134,7 @@ object testApi {
 
     fun postFile(): HttpCall<String> {
         return mHttpClient.stringCall {
-            url("http://192.168.2.83:8080/main/index")
+            url("http://192.168.2.103:8080/main/index")
             post() {
                 addParam("path", "/base.apk.cache")
             }
@@ -143,7 +148,7 @@ object testApi {
 
     fun download(file: File): FileHttpCall {
         return mHttpClient.responseCall {
-            urlParams("http://192.168.2.83:8080/main/files/WebViewGoogle.apk") {
+            urlParams("http://192.168.2.103:8080/main/files/WebViewGoogle.apk") {
             }
         }.toFileCall(file)
     }

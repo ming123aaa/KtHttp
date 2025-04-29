@@ -54,17 +54,28 @@ fun KtHttpConfig.onError(block: ResponseCallError) {
     setConfig(key_Error, block)
 }
 
-fun interface ResponseCallError {
-    fun onError(throwable: Throwable)
+fun KtHttpConfig.onError(block: (Throwable) -> Unit) {
+    setConfig(key_Error, object : ResponseCallError {
+        override fun onError(
+            throwable: Throwable,
+            call: Call,
+            response: Response?
+        ) {
+            block(throwable)
+        }
+    })
 }
 
-private fun ResponseCall.onError(throwable: Throwable){
+fun interface ResponseCallError {
+    fun onError(throwable: Throwable, call: Call,response: Response?)
+}
+
+private fun ResponseCall.onError(throwable: Throwable, call: Call,response: Response?) {
     val responseLog = getConfigs()[key_Error]
     if (responseLog is ResponseCallError) {
-        responseLog.onError(throwable)
+        responseLog.onError(throwable,call, response)
     }
 }
-
 
 
 class ResponseCall(private var call: Call, private val configs: Map<String, Any>) :
@@ -72,7 +83,7 @@ class ResponseCall(private var call: Call, private val configs: Map<String, Any>
     override fun request(error: (Throwable) -> Unit, callback: (Response) -> Unit) {
         call.enqueue(object : okhttp3.Callback {
             override fun onFailure(call: Call, e: java.io.IOException) {
-                onError(e)
+                onError(e,call, null)
                 error(e)
             }
 
@@ -80,8 +91,8 @@ class ResponseCall(private var call: Call, private val configs: Map<String, Any>
                 try {
                     onResponse(hookResponse(response))
                     callback(response)
-                }catch (e:Throwable){
-                    onError(e)
+                } catch (e: Throwable) {
+                    onError(e,call,response)
                     error(e)
                 }
             }

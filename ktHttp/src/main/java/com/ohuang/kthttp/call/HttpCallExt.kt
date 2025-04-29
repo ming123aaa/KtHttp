@@ -132,6 +132,9 @@ fun HttpCall<Response>.toStringHttpCallSafe(): HttpCall<String> {
     return toSafeTransformCall(StringTransForm)
 }
 
+/**
+ * 转化为指定类型
+ */
 fun<T> HttpCall<String>.toTransform(transform: Transform<T>):HttpCall<T>{
     return StringTransformCall(this,transform)
 }
