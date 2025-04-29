@@ -24,12 +24,12 @@ KtHttp 是一个基于 Kotlin 和 OkHttp 的轻量级 HTTP 客户端库 ，提�
 
 ## 基本用法
 
-### 1. HttpClient和Transform
+### 1. HttpClient和Transform 以及基本的请求
 
 ```kotlin
 object TestApi {
     var mHttpClient = HttpClient() //初始化httpClient,可以选择使用自己创建的OkhttpClient
-    var gson = Gson()
+    var gson = Gson() //可使用内敛函数gson.transForm()来获取Transform 完成json数据解析
 
 
     /**
@@ -51,7 +51,7 @@ object TestApi {
      * 用于解析json数据，目前已实现了Gson解析  需要其他解析器可以自己实现Transform
      * 这里需要利用kotlin inline保留泛型类型
      */
-    inline fun <reified T> jsonTransForm(): Transform<T>{
+    inline fun <reified T> jsonTransForm(): Transform<T> {
         return gson.transForm()
     }
 
@@ -108,36 +108,7 @@ object TestApi {
 
         }
     }
-
-
-    /**
-     *   一些其他的方法
-     */
-    fun test(): HttpCall<CityInfo> {
-        return mHttpClient.stringCall {
-            post()
-            url("http://192.168.2.83:8080/main/files/test.json")
-            hookResponse{ //可修改Response
-                println("hookResponse$it")
-                return@hookResponse it
-            }
-            onResponse { //回调Response
-                println("showResponse$it")
-            }
-            hookStringBody { //可修改字符串
-                println("hookStringBody:$it")
-                return@hookStringBody it
-            }
-            onStringBody { //回调字符串
-                println("showStringBody:$it")
-            }
-            onError{  //出现错误回调
-                println("onError:$it")
-            }
-
-        }
-    }
-
+    
 }
 ```
 ### 2.HttpCall
@@ -219,6 +190,46 @@ class ViewActivity : AppCompatActivity() {
     }
 
 }
+```
+
+## 3.KtHttpConfig  
+通过KtHttpConfig和HttpCall配合可实现一些额外的功能,以下是一些已实现的功能
+```kotlin
+
+var mHttpClient = HttpClient(globalKtConfigCall = {//全局配置,会被请求覆盖
+    onStringBody { //回调字符串
+        println("全局onStringBody:$it")
+    }
+}, forceKtConfigCall = {
+    onError { e,call,r-> //出现错误回调
+        println("强制onError:e=$e   url=${call.request().url}") }
+})
+    /**
+     *   一些其他的方法
+     */
+    fun test(): HttpCall<String> {
+        return mHttpClient.stringCall {
+            post()
+            url("http://192.168.2.83:8080/main/files/test.json")
+            hookResponse { //可修改Response
+                println("hookResponse$it")
+                return@hookResponse it
+            }
+            onResponse { //回调Response
+                println("showResponse$it")
+            }
+            hookStringBody { //可修改字符串
+                println("hookStringBody:$it")
+                return@hookStringBody it
+            }
+          
+            onError {  //出现错误回调
+                println("onError:$it")
+            }
+
+        }
+    }
+
 ```
 
 

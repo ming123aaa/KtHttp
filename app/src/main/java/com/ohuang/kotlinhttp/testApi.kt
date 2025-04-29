@@ -28,8 +28,8 @@ object testApi {
             println("全局onStringBody:$it")
         }
     }, forceKtConfigCall = {
-        onError { e,r->
-            println("强制onError:e=$e   url=${r?.request?.url}") }
+        onError { e,call,r->
+            println("强制onError:e=$e   url=${call.request().url}") }
     })
     var gson = Gson()
 
