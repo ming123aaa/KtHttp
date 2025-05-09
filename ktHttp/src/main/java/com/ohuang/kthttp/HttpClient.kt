@@ -9,6 +9,7 @@ import com.ohuang.kthttp.call.toTransformCall
 import com.ohuang.kthttp.transform.Transform
 import okhttp3.Call
 import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.Response
 
 /**
@@ -19,16 +20,9 @@ import okhttp3.Response
  */
 class HttpClient(
     var okHttpClient: OkHttpClient = OkHttpClient(),
-    globalKtConfigCall: KtHttpConfig.() -> Unit = {},
-    forceKtConfigCall:KtHttpConfig.() -> Unit = {}
+    private var globalKtConfigCall: KtHttpRequest.() -> Unit = {},
+    private var forceKtConfigCall: KtHttpRequest.() -> Unit = {}
 ) {
-    private var globalKtConfigImpl = KtHttpConfigImpl()
-    private var forceKtConfigImpl = KtHttpConfigImpl()
-
-    init {
-        globalKtConfigCall.invoke(globalKtConfigImpl)
-        forceKtConfigCall.invoke(forceKtConfigImpl)
-    }
 
     /**
      * 返回okhttp的Call 不封装
@@ -42,9 +36,12 @@ class HttpClient(
     }
 
     private fun createHttpRequest(block: KtHttpRequest.() -> Unit): KtHttpRequest {
-        val httpRequest = KtHttpRequest(globalKtConfigImpl)
+        val httpRequest = KtHttpRequest(
+            KtHttpConfigImpl(), Request.Builder().get()
+        )
+        globalKtConfigCall.invoke(httpRequest)
         block.invoke(httpRequest)
-        httpRequest.configs.putAll(forceKtConfigImpl.configs)
+        forceKtConfigCall.invoke(httpRequest)
         return httpRequest
     }
 

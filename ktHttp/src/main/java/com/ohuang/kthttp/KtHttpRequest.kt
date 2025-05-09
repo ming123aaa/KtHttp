@@ -1,6 +1,8 @@
 package com.ohuang.kthttp
 
-class KtHttpRequest(ktHttpConfigImpl:KtHttpConfigImpl) : HttpRequest(),KtHttpConfig {
+import okhttp3.Request
+
+class KtHttpRequest(internal val ktHttpConfigImpl:KtHttpConfigImpl,builder:Request.Builder) : HttpRequest(builder),KtHttpConfig {
     internal var configs = HashMap<String, Any>()
     init {
         configs.putAll(ktHttpConfigImpl.configs)

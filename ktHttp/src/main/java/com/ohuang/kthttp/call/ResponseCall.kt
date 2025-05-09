@@ -1,81 +1,10 @@
 package com.ohuang.kthttp.call
 
-import com.ohuang.kthttp.KtHttpConfig
+import com.ohuang.kthttp.config.callResponse
+import com.ohuang.kthttp.config.hookResponse
+import com.ohuang.kthttp.config.onError
 import okhttp3.Call
 import okhttp3.Response
-
-private const val key_onResponse = "ResponseShow"
-
-/**
- *  获取Response
- */
-fun KtHttpConfig.onResponse(block: ResponseShow) {
-    setConfig(key_onResponse, block)
-}
-
-fun interface ResponseShow {
-    fun onResponse(response: Response)
-}
-
-internal fun ResponseCall.onResponse(response: Response) {
-    val responseLog = getConfigs()[key_onResponse]
-    if (responseLog is ResponseShow) {
-        responseLog.onResponse(response)
-    }
-}
-
-private const val key_responseHook = "ResponseHook"
-
-/**
- *  可修改Response
- */
-fun KtHttpConfig.hookResponse(block: ResponseHook) {
-    setConfig(key_responseHook, block)
-}
-
-fun interface ResponseHook {
-    fun hook(response: Response): Response
-}
-
-internal fun ResponseCall.hookResponse(response: Response): Response {
-    val responseLog = getConfigs()[key_responseHook]
-    if (responseLog is ResponseHook) {
-        return responseLog.hook(response)
-    }
-    return response
-}
-
-private const val key_Error = "ResponseCallError"
-
-/**
- * 出现异常回调
- */
-fun KtHttpConfig.onError(block: ResponseCallError) {
-    setConfig(key_Error, block)
-}
-
-fun KtHttpConfig.onError(block: (Throwable) -> Unit) {
-    setConfig(key_Error, object : ResponseCallError {
-        override fun onError(
-            throwable: Throwable,
-            call: Call,
-            response: Response?
-        ) {
-            block(throwable)
-        }
-    })
-}
-
-fun interface ResponseCallError {
-    fun onError(throwable: Throwable, call: Call,response: Response?)
-}
-
-private fun ResponseCall.onError(throwable: Throwable, call: Call,response: Response?) {
-    val responseLog = getConfigs()[key_Error]
-    if (responseLog is ResponseCallError) {
-        responseLog.onError(throwable,call, response)
-    }
-}
 
 
 class ResponseCall(private var call: Call, private val configs: Map<String, Any>) :
@@ -89,7 +18,7 @@ class ResponseCall(private var call: Call, private val configs: Map<String, Any>
 
             override fun onResponse(call: Call, response: okhttp3.Response) {
                 try {
-                    onResponse(hookResponse(response))
+                    callResponse(hookResponse(response))
                     callback(response)
                 } catch (e: Throwable) {
                     onError(e,call,response)

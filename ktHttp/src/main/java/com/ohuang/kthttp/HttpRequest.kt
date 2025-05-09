@@ -2,9 +2,8 @@ package com.ohuang.kthttp
 
 import okhttp3.Request
 
-open class HttpRequest() {
-    internal var builder = Request.Builder().get()
-    var url: String = ""
+open class HttpRequest(internal var builder :Request.Builder) {
+
 
     /**
      * 没提供的方法可以加
@@ -20,7 +19,7 @@ open class HttpRequest() {
      * @param url
      */
     fun url(url: String) {
-        this.url = url
+        builder.url(url)
     }
 
 
@@ -29,10 +28,7 @@ open class HttpRequest() {
     }
 
     internal fun build(): Request {
-        if (url.isEmpty()) {
-            throw IllegalArgumentException("url is empty")
-        }
-        return builder.url(url).build()
+        return builder.build()
     }
 
 }

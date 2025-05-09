@@ -23,7 +23,11 @@ import org.junit.Assert.*
 class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
-        var waitResult = testApi.test().waitResultOrNull ()
-        println("waitResult=$waitResult")
+        var currentTimeMillis = System.currentTimeMillis()
+        for (i in 0 .. 10) {
+            var waitResult = testApi.test().waitResultOrNull()
+            println("waitResult$i=$waitResult")
+        }
+        println("time=${System.currentTimeMillis() - currentTimeMillis}")
     }
 }
