@@ -4,7 +4,11 @@ import okhttp3.Request
 
 open class HttpRequest(internal var builder :Request.Builder) {
 
-
+    var url: String = ""
+        set(value) {
+            field = value
+            builder.url(value)
+        }
     /**
      * 没提供的方法可以加
      * okhttp的Request.Builder
@@ -19,7 +23,7 @@ open class HttpRequest(internal var builder :Request.Builder) {
      * @param url
      */
     fun url(url: String) {
-        builder.url(url)
+        this.url = url
     }
 
 

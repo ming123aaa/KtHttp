@@ -22,8 +22,12 @@ fun KtHttpConfig.onStringBody(block: (String) -> Unit) {
 /**
  *  查看body
  */
-fun KtHttpConfig.onStringBody(block: StringTransformShow) {
-    setConfig(key_onStringBody, block)
+fun KtHttpConfig.onStringBody(block: (body: String, response: Response)-> Unit) {
+    setConfig(key_onStringBody, object : StringTransformShow {
+        override fun onStringBody(body: String, response: Response) {
+            block(body,response)
+        }
+    })
 }
 
 

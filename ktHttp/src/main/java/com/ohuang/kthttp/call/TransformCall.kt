@@ -1,6 +1,5 @@
 package com.ohuang.kthttp.call
 
-import com.ohuang.kthttp.KtHttpConfig
 import com.ohuang.kthttp.config.hookStringBody
 import com.ohuang.kthttp.config.onStringBody
 import com.ohuang.kthttp.transform.Transform

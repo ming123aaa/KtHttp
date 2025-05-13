@@ -21,11 +21,27 @@ fun HttpRequest.urlParams(url: String, block: RequestParams.() -> Unit = {}) {
     urlParams(url, requestParams.map)
 }
 
+
 /**
  * okhttp 请求的builder
  */
 fun HttpRequest.okhttpBuilder(block: okhttp3.Request.Builder.() -> Unit) {
     requestBuilderBlock(block)
+}
+
+/**
+ * 添加headers
+ */
+fun HttpRequest.addHeaders(headers: Map<String, String>) {
+    headers.entries.forEach {
+        addHeader(it.key, it.value)
+    }
+}
+
+fun HttpRequest.addHeaders(block: RequestParams.() -> Unit = {}) {
+    val requestParams = RequestParams()
+    block.invoke(requestParams)
+    addHeaders(requestParams.getParams())
 }
 
 /**
@@ -61,9 +77,12 @@ fun HttpRequest.post(block: RequestParams.() -> Unit = {}) {
     post(requestParams.map)
 }
 
-class RequestParams(val map: MutableMap<String, String> = TreeMap<String, String>()) {
+class RequestParams(internal val map: MutableMap<String, String> = TreeMap<String, String>()) {
     fun addParam(key: String, value: String) {
         map[key] = value
+    }
+    fun getParams(): Map<String, String> {
+        return map
     }
 
     fun addAllParams(params: Map<String, String>) {

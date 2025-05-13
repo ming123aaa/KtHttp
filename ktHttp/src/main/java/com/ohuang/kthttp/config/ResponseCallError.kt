@@ -13,8 +13,16 @@ fun interface ResponseCallError {
 /**
  * 出现异常回调
  */
-fun KtHttpConfig.onError(block: ResponseCallError) {
-    setConfig(key_Error, block)
+fun KtHttpConfig.onError(block: (throwable: Throwable, call: Call,response: Response?)-> Unit) {
+    setConfig(key_Error, object :  ResponseCallError {
+        override fun onError(
+            throwable: Throwable,
+            call: Call,
+            response: Response?
+        ) {
+            block(throwable,call,response)
+        }
+    })
 }
 /**
  * 出现异常回调

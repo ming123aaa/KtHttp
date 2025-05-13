@@ -13,8 +13,12 @@ fun interface ResponseHook {
 /**
  *  可修改Response
  */
-fun KtHttpConfig.hookResponse(block: ResponseHook) {
-    setConfig(key_responseHook, block)
+fun KtHttpConfig.hookResponse(block: (Response)-> Response) {
+    setConfig(key_responseHook, object :ResponseHook{
+        override fun hook(response: Response): Response {
+            return block(response)
+        }
+    })
 }
 
 

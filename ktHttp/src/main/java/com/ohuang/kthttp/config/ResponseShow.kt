@@ -12,8 +12,12 @@ fun interface ResponseShow {
 /**
  *  获取Response
  */
-fun KtHttpConfig.onResponse(block: ResponseShow) {
-    setConfig(key_onResponse, block)
+fun KtHttpConfig.onResponse(block: (Response)-> Unit) {
+    setConfig(key_onResponse, object : ResponseShow {
+        override fun onResponse(response: Response) {
+            block(response)
+        }
+    })
 }
 
 

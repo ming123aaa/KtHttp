@@ -5,6 +5,7 @@ import com.ohuang.kotlinhttp.data.CityInfo
 import com.ohuang.kotlinhttp.data.HttpData
 import com.ohuang.kthttp.HttpClient
 import com.ohuang.kthttp.KtHttpRequest
+import com.ohuang.kthttp.addHeaders
 import com.ohuang.kthttp.call.HttpCall
 import com.ohuang.kthttp.call.map
 import com.ohuang.kthttp.config.hookResponse
@@ -25,7 +26,7 @@ object testApi {
         onStringBody {
             println("全局onStringBody:$it")
         }
-        url("http://192.168.2.100:8080/main/files/test.json")
+
     }, forceKtConfigCall = {
         onError { e,call,r->
             println("强制onError:e=$e   url=${call.request().url}") }
@@ -60,8 +61,8 @@ object testApi {
      */
     fun test(): HttpCall<CityInfo> {
         return request<CityInfo>() {
-
-
+            url("http://192.168.2.100:8080/main/files/test.json")
+            println(url)
             hookResponse{ //可修改Response
                 println("hookResponse$it")
                 return@hookResponse it
@@ -104,6 +105,8 @@ object testApi {
         return mHttpClient.stringCall {
             urlParams("http://192.168.2.100:8080/main/index") { //给url添加参数
                 addParam("path", "/base.apk.cache")
+
+
             }
         }
     }
