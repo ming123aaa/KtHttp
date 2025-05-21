@@ -24,9 +24,11 @@ class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
         var currentTimeMillis = System.currentTimeMillis()
+        println("url="+testApi.test().getOkhttpCall().request().url)
         for (i in 0 .. 10) {
-            var waitResult = testApi.test().waitResultOrNull()
-            println("waitResult$i=$waitResult")
+
+//            var waitResult = testApi.test().waitResultOrNull()
+//            println("waitResult$i=$waitResult")
         }
         println("time=${System.currentTimeMillis() - currentTimeMillis}")
     }

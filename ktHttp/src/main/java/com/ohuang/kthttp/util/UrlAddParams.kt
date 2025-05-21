@@ -1,6 +1,7 @@
 package com.ohuang.kthttp.util
 
 import java.io.UnsupportedEncodingException
+import java.net.URLDecoder
 import java.net.URLEncoder
 
 object UrlAddParams {
@@ -11,7 +12,16 @@ object UrlAddParams {
         }
         return this
     }
-     fun urlAddParams(url: String, params: Map<String, String>): String {
+
+    private fun String.urlDecode(): String {
+        try {
+            return URLDecoder.decode(this, "utf-8")
+        } catch (e: UnsupportedEncodingException) {
+        }
+        return this
+    }
+
+    fun urlAddParams(url: String, params: Map<String, String>): String {
         if (params.isEmpty()) return url
 
         val baseUrl: String

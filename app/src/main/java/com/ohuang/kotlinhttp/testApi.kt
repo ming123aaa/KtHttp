@@ -62,7 +62,13 @@ object testApi {
     fun test(): HttpCall<CityInfo> {
         return request<CityInfo>() {
             url("http://192.168.2.100:8080/main/files/test.json")
-            println(url)
+
+            urlParams(url){
+                addParam("aaa","1111")
+            }
+            urlParams(url){
+                addParam("aaa","2222")
+            }
             hookResponse{ //可修改Response
                 println("hookResponse$it")
                 return@hookResponse it
@@ -74,12 +80,9 @@ object testApi {
                 println("hookStringBody:$it")
                  return@hookStringBody it
             }
-
             onError{  //出现错误回调
                 println("onError:$it")
             }
-
-
         }
     }
 

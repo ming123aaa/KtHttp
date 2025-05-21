@@ -7,8 +7,9 @@ interface KtHttpConfig {
     fun setConfig(name: String, value: Any)
 }
 
-open class KtHttpConfigImpl : KtHttpConfig {
-    var configs = HashMap<String, Any>()
+open class KtHttpConfigImpl(var configs: MutableMap<String, Any> = HashMap<String, Any>()) :
+    KtHttpConfig {
+
     override fun setConfig(name: String, value: Any) {
         configs[name] = value
     }

@@ -7,7 +7,7 @@ import okhttp3.Call
 import okhttp3.Response
 
 
-class ResponseCall(private var call: Call, private val configs: Map<String, Any>) :
+class ResponseCall(private var call: Call, private val configs: MutableMap<String, Any>) :
     HttpCall<Response> {
     override fun request(error: (Throwable) -> Unit, callback: (Response) -> Unit) {
         call.enqueue(object : okhttp3.Callback {
@@ -17,6 +17,7 @@ class ResponseCall(private var call: Call, private val configs: Map<String, Any>
             }
 
             override fun onResponse(call: Call, response: okhttp3.Response) {
+
                 try {
                     callResponse(hookResponse(response))
                     callback(response)
@@ -26,6 +27,10 @@ class ResponseCall(private var call: Call, private val configs: Map<String, Any>
                 }
             }
         })
+    }
+
+    override fun getOkhttpCall(): Call {
+        return call
     }
 
     override fun cancel() {
@@ -40,7 +45,7 @@ class ResponseCall(private var call: Call, private val configs: Map<String, Any>
         return call.isExecuted()
     }
 
-    override fun getConfigs(): Map<String, Any> {
+    override fun getConfigs(): MutableMap<String, Any> {
         return configs
     }
 }
