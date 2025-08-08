@@ -5,10 +5,10 @@ import com.ohuang.kthttp.config.onStringBody
 import com.ohuang.kthttp.transform.Transform
 import okhttp3.Response
 
-open class KtException(msg: String) : Exception(msg)
-class CodeNo200Exception(msg: String) : KtException(msg)
-class EmptyBodyException(msg: String) : KtException(msg)
-class TransformException(msg: String) : KtException(msg)
+open class KtHttpException(msg: String) : Exception(msg)
+class CodeNot200Exception(msg: String) : KtHttpException(msg)
+class EmptyBodyException(msg: String) : KtHttpException(msg)
+class TransformException(msg: String) : KtHttpException(msg)
 
 
 
@@ -30,16 +30,17 @@ internal class StringTransformCall<T>(call: HttpCall<String>, private val transf
 }
 
 
-internal class Code200TransformCall<T>(
+internal class TransformCall<T>(
     call: HttpCall<Response>,
+    var isCode200: Boolean = false,
     private val transform: Transform<T>
 ) :
     KtHttpCall<T, Response>(call) {
     override fun request(error: (Throwable) -> Unit, callback: (T) -> Unit) {
         call.request(error = error, callback = {
             var value: T? = null
-            if (it.code != 200) {
-                throw CodeNo200Exception("code is not 200  $it")
+            if (it.code != 200&&isCode200) {
+                throw CodeNot200Exception("code is not 200  $it")
             }
             val string = hookStringBody(it)
             onStringBody(string, it)
@@ -48,22 +49,6 @@ internal class Code200TransformCall<T>(
             } else {
                 throw EmptyBodyException("body string is Empty")
             }
-            if (value == null) {
-                throw TransformException("transform error")
-            }
-            callback(value)
-        })
-    }
-}
-
-internal class TransformCall<T>(call: HttpCall<Response>, private val transform: Transform<T>) :
-    KtHttpCall<T, Response>(call) {
-    override fun request(error: (Throwable) -> Unit, callback: (T) -> Unit) {
-        call.request(error = error, callback = {
-            var value: T? = null
-            val string = hookStringBody(it)
-            onStringBody(string, it)
-            value = transform.transform(string)
             if (value == null) {
                 throw TransformException("transform error")
             }

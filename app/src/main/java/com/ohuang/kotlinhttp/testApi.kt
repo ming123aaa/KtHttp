@@ -5,7 +5,6 @@ import com.ohuang.kotlinhttp.data.CityInfo
 import com.ohuang.kotlinhttp.data.HttpData
 import com.ohuang.kthttp.HttpClient
 import com.ohuang.kthttp.KtHttpRequest
-import com.ohuang.kthttp.addHeaders
 import com.ohuang.kthttp.call.HttpCall
 import com.ohuang.kthttp.call.map
 import com.ohuang.kthttp.config.hookResponse
@@ -13,7 +12,10 @@ import com.ohuang.kthttp.config.hookStringBody
 import com.ohuang.kthttp.config.onError
 import com.ohuang.kthttp.config.onResponse
 import com.ohuang.kthttp.config.onStringBody
+import com.ohuang.kthttp.download
+import com.ohuang.kthttp.download.DownloadCall
 import com.ohuang.kthttp.post
+import com.ohuang.kthttp.postJson
 import com.ohuang.kthttp.transform.Transform
 import com.ohuang.kthttp.transform.transForm
 import com.ohuang.kthttp.urlParams
@@ -28,8 +30,9 @@ object testApi {
         }
 
     }, forceKtConfigCall = {
-        onError { e,call,r->
-            println("强制onError:e=$e   url=${call.request().url}") }
+        onError { e, call, r ->
+            println("强制onError:e=$e   url=${call.request().url}")
+        }
     })
     var gson = Gson()
 
@@ -63,13 +66,13 @@ object testApi {
         return request<CityInfo>() {
             url("http://192.168.2.100:8080/main/files/test.json")
 
-            urlParams(url){
-                addParam("aaa","1111")
+            urlParams(url) {
+                addParam("aaa", "1111")
             }
-            urlParams(url){
-                addParam("aaa","2222")
+            urlParams(url) {
+                addParam("aaa", "2222")
             }
-            hookResponse{ //可修改Response
+            hookResponse { //可修改Response
                 println("hookResponse$it")
                 return@hookResponse it
             }
@@ -78,9 +81,9 @@ object testApi {
             }
             hookStringBody { //可修改字符串
                 println("hookStringBody:$it")
-                 return@hookStringBody it
+                return@hookStringBody it
             }
-            onError{  //出现错误回调
+            onError {  //出现错误回调
                 println("onError:$it")
             }
         }
@@ -143,6 +146,7 @@ object testApi {
             post() {
                 addParam("path", "/base.apk.cache")
             }
+            postJson()
             addHeader("Content-Type", "application/x-www-form-urlencoded")//支持添加头
             requestBuilderBlock { //需要其他功能可以直接使用okhttp的RequestBuilder
                 this.header("Content-Type", "application/x-www-form-urlencoded")
@@ -151,11 +155,11 @@ object testApi {
         }
     }
 
-    fun download(file: File): FileHttpCall {
-        return mHttpClient.responseCall {
-            urlParams("http://192.168.2.100:8080/main/files/WebViewGoogle.apk") {
+    fun download(file: File, onProcess: (current: Long, total: Long) -> Unit): DownloadCall {
+        return mHttpClient.download(file, isContinueDownload = true, onProcess = onProcess) {
+            urlParams("http://192.168.2.93:8080/main/files/%E9%93%B8%E4%BB%99/4399.apk") {
             }
-        }.toFileCall(file)
+        }
     }
 
 

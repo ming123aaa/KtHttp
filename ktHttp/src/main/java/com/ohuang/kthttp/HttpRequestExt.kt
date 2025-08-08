@@ -1,8 +1,11 @@
 package com.ohuang.kthttp
 
+import com.ohuang.kthttp.transform.ktHttp_mGson
 import com.ohuang.kthttp.util.UrlAddParams
 import okhttp3.FormBody
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.util.TreeMap
 
 /**
@@ -63,9 +66,43 @@ fun HttpRequest.post(body: RequestBody) {
 
 /**
  * 需要加参数的post请求
+ *
  */
 fun HttpRequest.post(params: Map<String, String>) {
     builder.post(getFormBody(params))
+}
+
+/**
+ *  post请求
+ *  提交的是json数据类型
+ */
+fun HttpRequest.postJson(json: String) {
+    builder.post(json.toRequestBody("application/json; charset=utf-8".toMediaType()))
+}
+/**
+ *  post请求
+ *  提交的是json数据类型
+ */
+fun HttpRequest.postJsonForAny(obj: Any) {
+    postJson(ktHttp_mGson.toJson(obj))
+}
+
+
+/**
+ * post请求
+ *  提交的是json数据类型
+ */
+fun HttpRequest.postJson(params: Map<String, String>) {
+    postJson(ktHttp_mGson.toJson(params))
+}
+/**
+ * post请求
+ *  提交的是json数据类型
+ */
+fun HttpRequest.postJson(block: RequestParams.() -> Unit = {}) {
+    val requestParams = RequestParams()
+    block.invoke(requestParams)
+    postJson(requestParams.map)
 }
 
 /**
@@ -81,6 +118,7 @@ class RequestParams(internal val map: MutableMap<String, String> = TreeMap<Strin
     fun addParam(key: String, value: String) {
         map[key] = value
     }
+
     fun getParams(): Map<String, String> {
         return map
     }

@@ -18,7 +18,7 @@ KtHttp 是一个基于 Kotlin 和 OkHttp 的轻量级 HTTP 客户端库 ，提�
 
 ```groovy
 	dependencies {
-	        implementation 'com.github.ming123aaa:KtHttp:Tag'
+	        implementation 'com.github.ming123aaa:KtHttp:1.1.3'
 	}
 ```
 
@@ -95,7 +95,7 @@ object TestApi {
     }
 
     fun postFile(): HttpCall<String> {
-        // stringCall
+        // stringCall 请求string
         return mHttpClient.stringCall {
             url("http://192.168.2.67:8080/main/index")
             post() { //post请求 目前仅支持get,post请求,需要其他请求通过 requestBuilderBlock{}里面自己实现
@@ -106,6 +106,14 @@ object TestApi {
                 this.header("Content-Type", "application/x-www-form-urlencoded")
             }
 
+        }
+    }
+
+    fun download(file: File, onProcess: (current: Long, total: Long) -> Unit): DownloadCall {
+        //文件下载
+        return mHttpClient.download(file, isContinueDownload = true, onProcess = onProcess) {
+            urlParams("http://192.168.2.93:8080/main/files/%E9%93%B8%E4%BB%99/4399.apk") {
+            }
         }
     }
     

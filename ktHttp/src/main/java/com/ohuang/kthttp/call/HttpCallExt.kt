@@ -135,8 +135,8 @@ fun HttpCall<Response>.toStringHttpCallSafe(): HttpCall<String> {
 /**
  * 转化为指定类型
  */
-fun<T> HttpCall<String>.toTransform(transform: Transform<T>):HttpCall<T>{
-    return StringTransformCall(this,transform)
+fun <T> HttpCall<String>.toTransform(transform: Transform<T>): HttpCall<T> {
+    return StringTransformCall(this, transform)
 }
 
 /**
@@ -145,7 +145,7 @@ fun<T> HttpCall<String>.toTransform(transform: Transform<T>):HttpCall<T>{
 fun <T> HttpCall<Response>.toSafeTransformCall(
     transform: Transform<T>
 ): HttpCall<T> {
-    return Code200TransformCall(this, transform)
+    return TransformCall(this, true, transform)
 }
 
 /**
@@ -154,7 +154,7 @@ fun <T> HttpCall<Response>.toSafeTransformCall(
 fun <T> HttpCall<Response>.toTransformCall(
     transform: Transform<T>
 ): HttpCall<T> {
-    return TransformCall(this, transform)
+    return TransformCall(this, false, transform)
 }
 
 /**

@@ -12,6 +12,7 @@ fun interface StringTransformHook {
 
 /**
  * 拦截Body字符串，返回新的字符串
+ *
  */
 fun KtHttpConfig.hookStringBody(block: (String) -> String) {
     setConfig(key_hookStringBody, object : StringTransformHook {
@@ -23,6 +24,7 @@ fun KtHttpConfig.hookStringBody(block: (String) -> String) {
 
 /**
  * 拦截Body字符串，返回新的字符串
+ *
  */
 fun KtHttpConfig.hookStringResponse(block: (Response) -> String) {
     setConfig(key_hookStringBody, object : StringTransformHook {

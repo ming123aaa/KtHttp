@@ -4,6 +4,7 @@ package com.ohuang.kthttp.transform
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.lang.reflect.Type
+
 /**
  * json解析
  */
@@ -24,4 +25,14 @@ inline fun <reified T> Gson.transForm(
     typeToken: Type = object : TypeToken<T>() {}.type
 ): Transform<T> {
     return GsonTransForm(this, typeToken)
+}
+
+inline fun <reified T> getGsonTypeToken(): TypeToken<T> {
+    return object : TypeToken<T>() {}
+}
+
+internal val ktHttp_mGson: Gson = Gson()
+
+fun <T> getGsonTransForm(typeToken: TypeToken<T>): Transform<T> {
+    return GsonTransForm(ktHttp_mGson, typeToken.type)
 }

@@ -14,6 +14,7 @@ import kotlinx.coroutines.withTimeout
 import org.junit.Test
 
 import org.junit.Assert.*
+import java.io.File
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -24,7 +25,9 @@ class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
         var currentTimeMillis = System.currentTimeMillis()
-        println("url="+testApi.test().getOkhttpCall().request().url)
+        testApi.download(File("F:\\a\\test.apk"), onProcess =  {current: Long, total: Long->
+            println("current:$current,total:$total")
+        }).waitResult()
         for (i in 0 .. 10) {
 
 //            var waitResult = testApi.test().waitResultOrNull()

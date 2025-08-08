@@ -9,11 +9,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import com.ohuang.kotlinhttp.R
 import com.ohuang.kthttp.call.asFlow
 import com.ohuang.kthttp.call.getResult
 import com.ohuang.kthttp.call.getResultOrNull
+import com.ohuang.kthttp.download.DownloadCall
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import java.io.File
 
 
 class ViewActivity : AppCompatActivity() {
@@ -23,6 +28,11 @@ class ViewActivity : AppCompatActivity() {
     val tv_index: TextView by lazy {
         findViewById<TextView>(R.id.tv_index)
     }
+    val tv_button: TextView by lazy {
+        findViewById<TextView>(R.id.tv_button)
+    }
+    var stateFlow: MutableStateFlow<String> = MutableStateFlow("没数据")
+    var download:DownloadCall?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,8 +43,33 @@ class ViewActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        findViewById<View>(R.id.tv_button).setOnClickListener {
-            test()
+        tv_button.setOnClickListener {
+            lifecycleScope.launch {
+                if (download==null) {
+                    tv_button.text = "停止"
+                    download =
+                        testApi.download(file = File(cacheDir.absolutePath + "/my.apk")) { current, total ->
+                            stateFlow.value = "下载进度：${current * 100 / total}%"
+                        }
+                    var resultOrNull = download?.getResultOrNull()
+                    if (resultOrNull != null) {
+                        stateFlow.value = "下载完成"
+                        tv_button.text = "开始"
+                        download = null
+                    }
+                }else{
+                    tv_button.text = "开始"
+                    download?.cancel()
+                    download = null
+                }
+            }
+
+        }
+
+        lifecycleScope.launch {
+            stateFlow.collect {
+                tv_index.text = it
+            }
         }
     }
 
@@ -42,27 +77,27 @@ class ViewActivity : AppCompatActivity() {
      * 测试正常请求
      * requestOnMainThread可在主线程请求
      */
-    fun test(){
+    fun test() {
         testApi.test().requestOnMainThread({
             tv_index.text = it.message
-        }){
+        }) {
             tv_index.text = it.city
         }
     }
 
     //**
     // flow
-  fun testFlow(){
+    fun testFlow() {
         lifecycleScope.launch {
             testApi.test().asFlow().catch {
                 //异常
                 tv_index.text = it.message
-            }.collect{
+            }.collect {
                 //成功处理
                 tv_index.text = it.city
             }
         }
-  }
+    }
 
     /**
      * 协程
@@ -83,17 +118,13 @@ class ViewActivity : AppCompatActivity() {
      */
     fun testCoroutine2() {
         lifecycleScope.launch {
-               //可不需要处理异常
-                val cityInfo = testApi.test().getResultOrNull(){ //处理异常
-                    tv_index.text = it.message
-                }
-                tv_index.text = cityInfo?.city
+            //可不需要处理异常
+            val cityInfo = testApi.test().getResultOrNull() { //处理异常
+                tv_index.text = it.message
+            }
+            tv_index.text = cityInfo?.city
         }
     }
-
-
-
-
 
 
 }
