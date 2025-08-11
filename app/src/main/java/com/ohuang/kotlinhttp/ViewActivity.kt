@@ -10,6 +10,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.ohuang.kotlinhttp.R
+import com.ohuang.kthttp.call.HttpCall
 import com.ohuang.kthttp.call.asFlow
 import com.ohuang.kthttp.call.getResult
 import com.ohuang.kthttp.call.getResultOrNull
@@ -32,7 +33,7 @@ class ViewActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.tv_button)
     }
     var stateFlow: MutableStateFlow<String> = MutableStateFlow("没数据")
-    var download:DownloadCall?=null
+    var download: HttpCall<*>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,11 +46,17 @@ class ViewActivity : AppCompatActivity() {
         }
         tv_button.setOnClickListener {
             lifecycleScope.launch {
-                if (download==null) {
+                if (download == null) {
                     tv_button.text = "停止"
                     download =
-                        testApi.download(file = File(cacheDir.absolutePath + "/my.apk")) { current, total ->
-                            stateFlow.value = "下载进度：${current * 100 / total}%"
+                        testApi.uploadFiles(
+                            file = listOf(
+                                File(cacheDir.absolutePath + "/my1.apk"),
+                                File(cacheDir.absolutePath + "/my2.apk"),
+                                File(cacheDir.absolutePath + "/my3.apk")
+                            )
+                        ) { current, total,index ->
+                            stateFlow.value = "下载进度${index}：${current * 100 / total}%"
                         }
                     var resultOrNull = download?.getResultOrNull()
                     if (resultOrNull != null) {
@@ -57,7 +64,7 @@ class ViewActivity : AppCompatActivity() {
                         tv_button.text = "开始"
                         download = null
                     }
-                }else{
+                } else {
                     tv_button.text = "开始"
                     download?.cancel()
                     download = null

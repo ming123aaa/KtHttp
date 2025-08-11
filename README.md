@@ -116,6 +116,15 @@ object TestApi {
             }
         }
     }
+
+    fun uploadFile(file: File,callBack:(current: Long, totalSize: Long) -> Unit ): HttpCall<String> {
+        return mHttpClient.stringCall {
+            url("http://192.168.2.123:8080/main/fileUpload")
+            postMultipartBody { //上传文件  postUploadFile or postMultipartBody
+                addFile(key = "fileName",file = file, callBack = callBack)
+            }
+        }
+    }
     
 }
 ```

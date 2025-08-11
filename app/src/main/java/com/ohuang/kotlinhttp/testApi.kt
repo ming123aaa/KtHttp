@@ -18,6 +18,9 @@ import com.ohuang.kthttp.post
 import com.ohuang.kthttp.postJson
 import com.ohuang.kthttp.transform.Transform
 import com.ohuang.kthttp.transform.transForm
+import com.ohuang.kthttp.upload.addFile
+import com.ohuang.kthttp.upload.postMultipartBody
+import com.ohuang.kthttp.upload.postUploadFile
 import com.ohuang.kthttp.urlParams
 import okhttp3.Call
 import okhttp3.Response
@@ -157,7 +160,30 @@ object testApi {
 
     fun download(file: File, onProcess: (current: Long, total: Long) -> Unit): DownloadCall {
         return mHttpClient.download(file, isContinueDownload = true, onProcess = onProcess) {
-            urlParams("http://192.168.2.93:8080/main/files/%E9%93%B8%E4%BB%99/4399.apk") {
+            urlParams("http://192.168.2.123:8080/main/files/base.apk") {
+            }
+        }
+    }
+
+    fun uploadFile(file: File,callBack:(current: Long, totalSize: Long) -> Unit ): HttpCall<String> {
+        return mHttpClient.stringCall {
+            url("http://192.168.2.123:8080/main/fileUpload")
+            postMultipartBody {//上传文件  postUploadFile or postMultipartBody
+                addFile(key = "fileName", file = file, callBack = callBack)
+            }
+        }
+    }
+
+    fun uploadFiles(file: List<File>,callBack:(current: Long, totalSize: Long,index:Int) -> Unit ): HttpCall<String> {
+        return mHttpClient.stringCall {
+            url("http://192.168.2.123:8080/main/multifileUpload")
+            postUploadFile {//上传文件  postUploadFile or postMultipartBody
+                file.forEachIndexed { index,f-> //上传多个文件
+                    addFile(key = "fileName",file = f, callBack = { current,total->
+                        callBack(current,total,index)
+                    })
+                }
+
             }
         }
     }

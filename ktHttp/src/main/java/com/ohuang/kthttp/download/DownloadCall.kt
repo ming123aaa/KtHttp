@@ -23,7 +23,7 @@ open class DownloadCall(
 
     protected fun download(response: Response) {
         // 1. 检查响应是否成功
-        if (!response.isSuccessful) {
+        if (!(response.code==200||response.code==206)) {
             throw KtHttpException("HTTP ${response.code}: ${response.message}")
         }
 
@@ -42,7 +42,7 @@ open class DownloadCall(
             fileChannel = randomAccessFile.channel
 
             // 4. 设置文件指针到断点位置
-            if (rangeStart > 0) {
+            if (rangeStart > 0&&response.code==206) {
                 if (rangeStart>bytesToDownload){
                     throw KtHttpException("rangeStart > total size")
                 }
