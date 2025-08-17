@@ -25,14 +25,7 @@ class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
         var currentTimeMillis = System.currentTimeMillis()
-        testApi.download(File("F:\\a\\test.apk"), onProcess =  {current: Long, total: Long->
-            println("current:$current,total:$total")
-        }).waitResult()
-        for (i in 0 .. 10) {
 
-//            var waitResult = testApi.test().waitResultOrNull()
-//            println("waitResult$i=$waitResult")
-        }
         println("time=${System.currentTimeMillis() - currentTimeMillis}")
     }
 }

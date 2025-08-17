@@ -40,11 +40,11 @@ suspend fun <T> HttpCall<T>.getResult(isCancel: Boolean = false): T {
         if (isCancel) {
             continuation.invokeOnCancellation { this@getResult.cancel() }
         }
-        this@getResult.request({
+        this@getResult.request(error = {
             if (continuation.isActive) {
                 continuation.resumeWithException(it)
             }
-        }, {
+        }, callback = {
 
             if (continuation.isActive) {
                 continuation.resume(it)
@@ -62,16 +62,7 @@ suspend fun <T> HttpCall<T>.getResultSafe(
     isCancel: Boolean = false,
     block: (Throwable) -> Unit = {}
 ): T? {
-    try {
-        return getResult(isCancel = isCancel)
-    } catch (e: Throwable) {
-        if (e is CancellationException) {//处理协程取消异常
-            throw e
-        } else {
-            block(e)
-        }
-    }
-    return null
+    return getResultOrNull(isCancel = isCancel, block = block)
 }
 
 /**
@@ -93,6 +84,27 @@ suspend fun <T> HttpCall<T>.getResultOrNull(
         }
     }
     return null
+}
+
+/**
+ * 协程获取结果
+ * @param isCancel 协程取消后是否 取消网络请求
+ */
+suspend fun <T> HttpCall<T>.awaitOrNull(
+    isCancel: Boolean = false,
+    block: (Throwable) -> Unit = {}
+): T? {
+    return getResultOrNull(isCancel = isCancel, block = block)
+}
+
+/**
+ * 协程获取结果
+ * @param isCancel 协程取消后是否 取消网络请求
+ */
+suspend fun <T> HttpCall<T>.await(
+    isCancel: Boolean = false
+): T? {
+    return getResult(isCancel = isCancel)
 }
 
 /**
@@ -122,15 +134,33 @@ fun Call.toHttpCall(block: KtHttpConfig.() -> Unit = {}): HttpCall<Response> {
  *  Response转化为String
  */
 fun HttpCall<Response>.toStringHttpCall(): HttpCall<String> {
-    return toTransformCall(StringTransForm)
+    return toTransformCall( StringTransForm)
+}
+
+/**
+ *  Response转化为String
+ *  只处理httpCode==200
+ */
+fun HttpCall<Response>.toStringHttpCallCode200(): HttpCall<String> {
+    return toTransformCallCode200( StringTransForm)
+}
+
+/**
+ *  Response转化为String
+ *  只处理httpCode==200
+ */
+@Deprecated(message = "请替换成toStringHttpCallCode200", replaceWith = ReplaceWith("toStringHttpCallCode200()"))
+fun HttpCall<Response>.toStringHttpCallSafe(): HttpCall<String> {
+    return toStringHttpCallCode200()
 }
 
 /**
  *  Response转化为String
  */
-fun HttpCall<Response>.toStringHttpCallSafe(): HttpCall<String> {
-    return toSafeTransformCall(StringTransForm)
+fun HttpCall<Response>.toStringHttpCallNotCheck(): HttpCall<String> {
+    return toTransformCallNotCheck( StringTransForm)
 }
+
 
 /**
  * 转化为指定类型
@@ -140,12 +170,35 @@ fun <T> HttpCall<String>.toTransform(transform: Transform<T>): HttpCall<T> {
 }
 
 /**
- * Response转化为指定类型   只对code==200时处理
+ *  Response转化为指定类型
+ *  只处理 httpCode==200
  */
+fun <T> HttpCall<Response>.toTransformCallCode200(
+    transform: Transform<T>
+): HttpCall<T> {
+    return TransformCall(call = this, codeCheck = CodeCheck.Code_200,transform=transform)
+}
+
+/**
+ *  Response转化为指定类型
+ *  只处理 httpCode==200
+ */
+@Deprecated("请替换成toTransformCallCode200()", replaceWith = ReplaceWith("toTransformCallCode200(transform)"),
+    level = DeprecationLevel.WARNING)
 fun <T> HttpCall<Response>.toSafeTransformCall(
     transform: Transform<T>
 ): HttpCall<T> {
-    return TransformCall(this, true, transform)
+    return toTransformCallCode200(transform)
+}
+
+/**
+ * Response转化为指定类型
+ * 不检查httpCode
+ */
+fun <T> HttpCall<Response>.toTransformCallNotCheck(
+    transform: Transform<T>
+): HttpCall<T> {
+    return TransformCall(call = this, codeCheck = CodeCheck.Code_NotCheck,transform=transform)
 }
 
 /**
@@ -154,7 +207,7 @@ fun <T> HttpCall<Response>.toSafeTransformCall(
 fun <T> HttpCall<Response>.toTransformCall(
     transform: Transform<T>
 ): HttpCall<T> {
-    return TransformCall(this, false, transform)
+    return TransformCall(call = this, codeCheck = CodeCheck.Code_Successful,transform=transform)
 }
 
 /**

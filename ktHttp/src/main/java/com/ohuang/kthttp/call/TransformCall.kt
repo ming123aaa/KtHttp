@@ -29,19 +29,22 @@ internal class StringTransformCall<T>(call: HttpCall<String>, private val transf
 
 }
 
+internal enum class CodeCheck{
+    Code_Successful,
+    Code_200,
+    Code_NotCheck
+}
 
 internal class TransformCall<T>(
     call: HttpCall<Response>,
-    var isCode200: Boolean = false,
+    private var codeCheck:CodeCheck=CodeCheck.Code_Successful,
     private val transform: Transform<T>
 ) :
     KtHttpCall<T, Response>(call) {
     override fun request(error: (Throwable) -> Unit, callback: (T) -> Unit) {
         call.request(error = error, callback = {
             var value: T? = null
-            if (it.code != 200&&isCode200) {
-                throw CodeNot200Exception("code is not 200  $it")
-            }
+            checkHttpCode(it)
             val string = hookStringBody(it)
             onStringBody(string, it)
             if (string.isNotEmpty()) {
@@ -54,5 +57,29 @@ internal class TransformCall<T>(
             }
             callback(value)
         })
+    }
+
+    private fun checkHttpCode(response: Response) {
+        if (codeCheck==CodeCheck.Code_NotCheck){
+            return
+        }
+        val isThrow=if (codeCheck== CodeCheck.Code_Successful){
+            !response.isSuccessful
+        }else if (codeCheck== CodeCheck.Code_200){
+            response.code!=200
+        }else{
+            false
+        }
+        if (isThrow) {
+            try {
+                response.close()
+            } finally {
+                if (codeCheck== CodeCheck.Code_200){
+                    throw CodeNot200Exception("http code!=200  $response")
+                }else {
+                    throw KtHttpException("http code:${response.code}  $response")
+                }
+            }
+        }
     }
 }
