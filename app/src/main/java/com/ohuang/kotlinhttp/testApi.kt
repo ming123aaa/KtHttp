@@ -7,8 +7,6 @@ import com.ohuang.kthttp.HttpClient
 import com.ohuang.kthttp.KtHttpRequest
 import com.ohuang.kthttp.call.HttpCall
 import com.ohuang.kthttp.call.map
-import com.ohuang.kthttp.call.toSafeTransformCall
-import com.ohuang.kthttp.call.toStringHttpCallSafe
 import com.ohuang.kthttp.config.hookResponse
 import com.ohuang.kthttp.config.hookStringBody
 import com.ohuang.kthttp.config.onError
@@ -17,10 +15,7 @@ import com.ohuang.kthttp.config.onStringBody
 import com.ohuang.kthttp.download
 import com.ohuang.kthttp.download.DownloadCall
 import com.ohuang.kthttp.post
-import com.ohuang.kthttp.postJson
 import com.ohuang.kthttp.stringCallCode200
-import com.ohuang.kthttp.stringCallNotCheck
-import com.ohuang.kthttp.stringCallSafe
 import com.ohuang.kthttp.transform.Transform
 import com.ohuang.kthttp.transform.transForm
 import com.ohuang.kthttp.upload.addFile

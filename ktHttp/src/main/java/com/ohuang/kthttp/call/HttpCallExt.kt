@@ -3,8 +3,8 @@ package com.ohuang.kthttp.call
 
 import com.ohuang.kthttp.KtHttpConfig
 import com.ohuang.kthttp.KtHttpConfigImpl
-import com.ohuang.kthttp.transform.Transform
 import com.ohuang.kthttp.transform.StringTransForm
+import com.ohuang.kthttp.transform.Transform
 import com.ohuang.kthttp.wait.ThreadWait
 import com.ohuang.kthttp.wait.WaitResult
 import kotlinx.coroutines.flow.Flow
