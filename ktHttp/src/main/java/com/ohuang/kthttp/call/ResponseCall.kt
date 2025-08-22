@@ -1,5 +1,6 @@
 package com.ohuang.kthttp.call
 
+import com.ohuang.kthttp.config.callRequestShow
 import com.ohuang.kthttp.config.callResponse
 import com.ohuang.kthttp.config.hookResponse
 import com.ohuang.kthttp.config.onError
@@ -10,6 +11,7 @@ import okhttp3.Response
 class ResponseCall(private var call: Call, private val configs: MutableMap<String, Any>) :
     HttpCall<Response> {
     override fun request(error: (Throwable) -> Unit, callback: (Response) -> Unit) {
+        callRequestShow(call)
         call.enqueue(object : okhttp3.Callback {
             override fun onFailure(call: Call, e: java.io.IOException) {
                 onError(e,call, null)
@@ -17,12 +19,13 @@ class ResponseCall(private var call: Call, private val configs: MutableMap<Strin
             }
 
             override fun onResponse(call: Call, response: okhttp3.Response) {
-
+                var hookResponse=response
                 try {
-                    callResponse(hookResponse(response))
-                    callback(response)
+                    var hookResponse = hookResponse(response)
+                    callResponse(hookResponse)
+                    callback(hookResponse)
                 } catch (e: Throwable) {
-                    onError(e,call,response)
+                    onError(e,call,hookResponse)
                     error(e)
                 }
             }

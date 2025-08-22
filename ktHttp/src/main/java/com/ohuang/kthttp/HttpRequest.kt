@@ -2,13 +2,18 @@ package com.ohuang.kthttp
 
 import okhttp3.Request
 
-open class HttpRequest(internal var builder :Request.Builder) {
+open class HttpRequest(internal var builder: Request.Builder) {
 
     var url: String = ""
         set(value) {
             field = value
             builder.url(value)
         }
+
+    fun requestBuilder(block: (Request.Builder) -> Unit) {
+        block.invoke(builder)
+    }
+
     /**
      * 没提供的方法可以加
      * okhttp的Request.Builder
@@ -31,8 +36,24 @@ open class HttpRequest(internal var builder :Request.Builder) {
         builder.addHeader(key, value)
     }
 
+    private var requestBuildHook: ((Request) -> Request)? = null
+    private var requestBuildCall: ((Request) -> Unit)? = null
+
+    fun hookRequestBuild(block: (Request) -> Request) {
+        requestBuildHook = block
+    }
+
+    fun onRequestBuild(block: (Request) -> Unit) {
+        requestBuildCall = block
+    }
+
     internal fun build(): Request {
-        return builder.build()
+        var build = builder.build()
+        if (requestBuildHook != null) {
+            build = requestBuildHook!!.invoke(build)
+        }
+        requestBuildCall?.invoke(build)
+        return build
     }
 
 }

@@ -28,6 +28,20 @@ class UrlUtilsTest {
         val result = urlAddParams(url, params)
         assertEquals("https://example.com?query=hello+world&user=%E5%BC%A0%E4%B8%89", result)
     }
+    @Test
+    fun `urlAddParams should encode special characters2`() {
+        val url = "https://example.com"
+        val params = mapOf("query" to "hello world", "张三" to "user")
+        val result = urlAddParams(url, params)
+        assertEquals("https://example.com?query=hello+world&%E5%BC%A0%E4%B8%89=user", result)
+    }
+    @Test
+    fun `urlAddParams should encode special characters3`() {
+        val url = "https://example.com?query=hello+world&%E5%BC%A0%E4%B8%89=user"
+        val params = mapOf("query" to "hello world", "张三" to "user")
+        val result = urlAddParams(url, params)
+        assertEquals("https://example.com?query=hello+world&%E5%BC%A0%E4%B8%89=user", result)
+    }
 
     @Test
     fun `urlAddParams should append params to existing query`() {

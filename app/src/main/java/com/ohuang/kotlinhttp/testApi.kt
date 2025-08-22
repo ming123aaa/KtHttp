@@ -10,10 +10,12 @@ import com.ohuang.kthttp.call.map
 import com.ohuang.kthttp.config.hookResponse
 import com.ohuang.kthttp.config.hookStringBody
 import com.ohuang.kthttp.config.onError
+import com.ohuang.kthttp.config.onRequest
 import com.ohuang.kthttp.config.onResponse
 import com.ohuang.kthttp.config.onStringBody
 import com.ohuang.kthttp.download
 import com.ohuang.kthttp.download.DownloadCall
+import com.ohuang.kthttp.okhttpBuilder
 import com.ohuang.kthttp.post
 import com.ohuang.kthttp.stringCallCode200
 import com.ohuang.kthttp.transform.Transform
@@ -153,6 +155,7 @@ object testApi {
             addHeader("Content-Type", "application/x-www-form-urlencoded")//支持添加头
             requestBuilderBlock { //需要其他功能可以直接使用okhttp的RequestBuilder
                 this.header("Content-Type", "application/x-www-form-urlencoded")
+
             }
 
         }
@@ -192,6 +195,18 @@ object testApi {
 
         return mHttpClient.stringCallCode200 {
             url(url)
+
+            onRequestBuild { request ->
+                println("onRequestBuild-> $request")
+            }
+            hookRequestBuild { request ->
+                println("onRequestBuild-> $request")
+                return@hookRequestBuild  request
+            }
+
+            onRequest { request ->
+                println("onRequest-> $request")
+            }
 
         }
     }

@@ -9,14 +9,18 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.util.TreeMap
 
 /**
- * 需要加参数的url
+ * 设置url,可新增url参数
+ *
+ * 若需要查看或删除url中存在的参数请使用[urlParamsEdit]方法
  */
 fun HttpRequest.urlParams(url: String, params: Map<String, String>) {
     url(UrlAddParams.urlAddParams(url, params))
 }
 
 /**
- * 需要加参数的url
+ * 设置url,可新增url参数
+ *
+ * 若需要查看或删除url中存在的参数请使用[urlParamsEdit]方法
  */
 fun HttpRequest.urlParams(url: String, block: RequestParams.() -> Unit = {}) {
     val requestParams = RequestParams()
@@ -24,6 +28,17 @@ fun HttpRequest.urlParams(url: String, block: RequestParams.() -> Unit = {}) {
     urlParams(url, requestParams.map)
 }
 
+/**
+ * 设置url,可编辑url的参数
+ *
+ * 与[urlParams]相比,[urlParamsEdit]方法可以查看和删除在url已存在的参数
+ */
+fun HttpRequest.urlParamsEdit(url: String, block: RequestParams.() -> Unit = {}){
+    var urlParams = UrlAddParams.getUrlParams(url)
+    val requestParams = RequestParams(urlParams)
+    block.invoke(requestParams)
+    url(UrlAddParams.urlReplaceParams(url, requestParams.map))
+}
 
 /**
  * okhttp 请求的builder
@@ -41,6 +56,9 @@ fun HttpRequest.addHeaders(headers: Map<String, String>) {
     }
 }
 
+/**
+ * 添加headers
+ */
 fun HttpRequest.addHeaders(block: RequestParams.() -> Unit = {}) {
     val requestParams = RequestParams()
     block.invoke(requestParams)
@@ -119,6 +137,17 @@ class RequestParams(internal val map: MutableMap<String, String> = TreeMap<Strin
         map[key] = value
     }
 
+    fun hasParam(key: String): Boolean{
+        return map.containsKey(key)
+    }
+
+    fun getParam(key: String): String?{
+        return map[key]
+    }
+
+    fun getAllParams(): Map<String, String> {
+        return map
+    }
     fun getParams(): Map<String, String> {
         return map
     }
