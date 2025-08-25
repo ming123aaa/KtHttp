@@ -6,6 +6,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import com.ohuang.kthttp.call.EmptyBodyException
+import com.ohuang.kthttp.call.ErrorResponse
 import com.ohuang.kthttp.call.HttpCall
 import com.ohuang.kthttp.call.KtHttpCall
 import com.ohuang.kthttp.call.getResultSafe
@@ -131,7 +132,12 @@ class FileHttpCall(private var file: File, call: HttpCall<Response>) :
                     callback.invoke(file)
                 }
             } else {
-                error(EmptyBodyException("body is null"))
+                error(
+                    EmptyBodyException(
+                        "body is null",
+                        errorResponse = ErrorResponse(response = response, errorBody = null)
+                    )
+                )
                 return@request
             }
         }

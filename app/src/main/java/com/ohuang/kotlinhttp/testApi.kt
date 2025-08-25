@@ -5,6 +5,7 @@ import com.ohuang.kotlinhttp.data.CityInfo
 import com.ohuang.kotlinhttp.data.HttpData
 import com.ohuang.kthttp.HttpClient
 import com.ohuang.kthttp.KtHttpRequest
+import com.ohuang.kthttp.call.ErrorResponseException
 import com.ohuang.kthttp.call.HttpCall
 import com.ohuang.kthttp.call.map
 import com.ohuang.kthttp.config.hookResponse
@@ -37,6 +38,11 @@ object testApi {
 
     }, forceKtConfigCall = {
         onError { e, call, r ->
+            if (e is ErrorResponseException){
+                println(e.errorResponse.toString())
+                println("errorBodyString="+e.errorResponse.errorBodyString())
+
+            }
             println("强制onError:e=$e   url=${call.request().url}")
         }
     })
