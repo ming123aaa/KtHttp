@@ -35,7 +35,7 @@ fun <T, B> HttpCall<T>.map(
  * 协程获取结果
  * @param isCancel 协程取消后是否 取消网络请求
  */
-suspend fun <T> HttpCall<T>.getResult(isCancel: Boolean = false): T {
+suspend fun <T> HttpCall<T>.getResult(isCancel: Boolean = true): T {
     return suspendCancellableCoroutine { continuation ->
         if (isCancel) {
             continuation.invokeOnCancellation { this@getResult.cancel() }
@@ -59,7 +59,7 @@ suspend fun <T> HttpCall<T>.getResult(isCancel: Boolean = false): T {
  * 出现异常时回调且返回null
  */
 suspend fun <T> HttpCall<T>.getResultSafe(
-    isCancel: Boolean = false,
+    isCancel: Boolean = true,
     block: (Throwable) -> Unit = {}
 ): T? {
     return getResultOrNull(isCancel = isCancel, block = block)
@@ -71,7 +71,7 @@ suspend fun <T> HttpCall<T>.getResultSafe(
  * 出现异常时回调且返回null
  */
 suspend fun <T> HttpCall<T>.getResultOrNull(
-    isCancel: Boolean = false,
+    isCancel: Boolean = true,
     block: (Throwable) -> Unit = {}
 ): T? {
     try {
@@ -91,7 +91,7 @@ suspend fun <T> HttpCall<T>.getResultOrNull(
  * @param isCancel 协程取消后是否 取消网络请求
  */
 suspend fun <T> HttpCall<T>.awaitOrNull(
-    isCancel: Boolean = false,
+    isCancel: Boolean = true,
     block: (Throwable) -> Unit = {}
 ): T? {
     return getResultOrNull(isCancel = isCancel, block = block)
@@ -102,8 +102,8 @@ suspend fun <T> HttpCall<T>.awaitOrNull(
  * @param isCancel 协程取消后是否 取消网络请求
  */
 suspend fun <T> HttpCall<T>.await(
-    isCancel: Boolean = false
-): T? {
+    isCancel: Boolean = true
+): T {
     return getResult(isCancel = isCancel)
 }
 
@@ -111,16 +111,16 @@ suspend fun <T> HttpCall<T>.await(
  *  转化为flow
  *  * @param isCancel 协程取消后是否 取消网络请求
  */
-fun <T> HttpCall<T>.asFlow(isCancel: Boolean = false): Flow<T> {
-    return kotlinx.coroutines.flow.flow { emit(getResult(isCancel = isCancel)) }
+fun <T> HttpCall<T>.asFlow(isCancel: Boolean = true): Flow<T> {
+    return kotlinx.coroutines.flow.flow { emit(await(isCancel = isCancel)) }
 }
 
 /**
  *  转化为flow
  *  * @param isCancel 协程取消后是否 取消网络请求
  */
-fun <T> HttpCall<T>.asFlowOrNull(isCancel: Boolean = false): Flow<T?> {
-    return kotlinx.coroutines.flow.flow { emit(getResultOrNull(isCancel = isCancel)) }
+fun <T> HttpCall<T>.asFlowOrNull(isCancel: Boolean = true): Flow<T?> {
+    return kotlinx.coroutines.flow.flow { emit(awaitOrNull(isCancel = isCancel)) }
 }
 
 
@@ -132,9 +132,12 @@ fun Call.toHttpCall(block: KtHttpConfig.() -> Unit = {}): HttpCall<Response> {
 
 /**
  *  Response转化为String
+ *
+ *  处理httpCode>=200&&httpCode<300的请求结果
  */
+
 fun HttpCall<Response>.toStringHttpCall(): HttpCall<String> {
-    return toTransformCall( StringTransForm)
+    return toTransformCall(StringTransForm)
 }
 
 /**
@@ -142,23 +145,27 @@ fun HttpCall<Response>.toStringHttpCall(): HttpCall<String> {
  *  只处理httpCode==200
  */
 fun HttpCall<Response>.toStringHttpCallCode200(): HttpCall<String> {
-    return toTransformCallCode200( StringTransForm)
+    return toTransformCallCode200(StringTransForm)
 }
 
 /**
  *  Response转化为String
  *  只处理httpCode==200
  */
-@Deprecated(message = "请替换成toStringHttpCallCode200", replaceWith = ReplaceWith("toStringHttpCallCode200()"))
+@Deprecated(
+    message = "请替换成toStringHttpCallCode200",
+    replaceWith = ReplaceWith("toStringHttpCallCode200()")
+)
 fun HttpCall<Response>.toStringHttpCallSafe(): HttpCall<String> {
     return toStringHttpCallCode200()
 }
 
 /**
  *  Response转化为String
+ *  不检查httpCode
  */
 fun HttpCall<Response>.toStringHttpCallNotCheck(): HttpCall<String> {
-    return toTransformCallNotCheck( StringTransForm)
+    return toTransformCallNotCheck(StringTransForm)
 }
 
 
@@ -176,15 +183,18 @@ fun <T> HttpCall<String>.toTransform(transform: Transform<T>): HttpCall<T> {
 fun <T> HttpCall<Response>.toTransformCallCode200(
     transform: Transform<T>
 ): HttpCall<T> {
-    return TransformCall(call = this, codeCheck = CodeCheck.Code_200,transform=transform)
+    return TransformCall(call = this, codeCheck = CodeCheck.Code_200, transform = transform)
 }
 
 /**
  *  Response转化为指定类型
  *  只处理 httpCode==200
  */
-@Deprecated("请替换成toTransformCallCode200()", replaceWith = ReplaceWith("toTransformCallCode200(transform)"),
-    level = DeprecationLevel.WARNING)
+@Deprecated(
+    "请替换成toTransformCallCode200()",
+    replaceWith = ReplaceWith("toTransformCallCode200(transform)"),
+    level = DeprecationLevel.WARNING
+)
 fun <T> HttpCall<Response>.toSafeTransformCall(
     transform: Transform<T>
 ): HttpCall<T> {
@@ -198,20 +208,21 @@ fun <T> HttpCall<Response>.toSafeTransformCall(
 fun <T> HttpCall<Response>.toTransformCallNotCheck(
     transform: Transform<T>
 ): HttpCall<T> {
-    return TransformCall(call = this, codeCheck = CodeCheck.Code_NotCheck,transform=transform)
+    return TransformCall(call = this, codeCheck = CodeCheck.Code_NotCheck, transform = transform)
 }
 
 /**
  *  Response转化为指定类型
+ *  处理httpCode>=200&&httpCode<300的请求结果
  */
 fun <T> HttpCall<Response>.toTransformCall(
     transform: Transform<T>
 ): HttpCall<T> {
-    return TransformCall(call = this, codeCheck = CodeCheck.Code_Successful,transform=transform)
+    return TransformCall(call = this, codeCheck = CodeCheck.Code_Successful, transform = transform)
 }
 
 /**
- *  会堵塞当前线程，更推荐使用getResult()
+ * 会堵塞当前线程，更推荐使用getResult()
  * 等待请求结果, 如果超时则抛出异常
  * @param timeOut 超时时间，单位毫秒，0表示无限制
  */

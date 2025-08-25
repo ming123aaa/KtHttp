@@ -18,6 +18,7 @@ import com.ohuang.kthttp.download.DownloadCall
 import com.ohuang.kthttp.okhttpBuilder
 import com.ohuang.kthttp.post
 import com.ohuang.kthttp.stringCallCode200
+import com.ohuang.kthttp.stringCallNotCheck
 import com.ohuang.kthttp.transform.Transform
 import com.ohuang.kthttp.transform.transForm
 import com.ohuang.kthttp.upload.addFile
@@ -193,7 +194,7 @@ object testApi {
 
     fun getUrlContent(url: String): HttpCall<String>{
 
-        return mHttpClient.stringCallCode200 {
+        return mHttpClient.stringCall {
             url(url)
 
             onRequestBuild { request ->
