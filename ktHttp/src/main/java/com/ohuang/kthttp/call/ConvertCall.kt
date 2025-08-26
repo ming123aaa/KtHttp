@@ -64,13 +64,22 @@ fun <T> HttpCall<String>.toTransform(transform: Transform<T>): HttpCall<T> {
 fun <T> HttpCall<Response>.toTransformCallCode200(
     transform: Transform<T>
 ): HttpCall<T> {
-    return ConvertCall(call = this, codeCheck = CodeCheck.Code_200, convert = transform.toConvert(this))
+    return ConvertCall(
+        call = this,
+        codeCheck = CodeCheck.Code_200,
+        convert = transform.toConvert(this)
+    )
 }
 
-fun <T> HttpCall<Response>.toTransformCallCode200(
-    transform: ResponseConvert<T>
+
+/**
+ *  Response转化为指定类型
+ *  只处理 httpCode==200
+ */
+fun <T> HttpCall<Response>.toConvertCallCode200(
+    convert: ResponseConvert<T>
 ): HttpCall<T> {
-    return ConvertCall(call = this, codeCheck = CodeCheck.Code_200, convert = transform)
+    return ConvertCall(call = this, codeCheck = CodeCheck.Code_200, convert = convert)
 }
 
 /**
@@ -95,13 +104,21 @@ fun <T> HttpCall<Response>.toSafeTransformCall(
 fun <T> HttpCall<Response>.toTransformCallNotCheck(
     transform: Transform<T>
 ): HttpCall<T> {
-    return ConvertCall(call = this, codeCheck = CodeCheck.Code_NotCheck, convert = transform.toConvert(this))
+    return ConvertCall(
+        call = this,
+        codeCheck = CodeCheck.Code_NotCheck,
+        convert = transform.toConvert(this)
+    )
 }
 
-fun <T> HttpCall<Response>.toTransformCallNotCheck(
-    transform: ResponseConvert<T>
+/**
+ * Response转化为指定类型
+ * 不检查httpCode
+ */
+fun <T> HttpCall<Response>.toConvertCallNotCheck(
+    convert: ResponseConvert<T>
 ): HttpCall<T> {
-    return ConvertCall(call = this, codeCheck = CodeCheck.Code_NotCheck, convert = transform)
+    return ConvertCall(call = this, codeCheck = CodeCheck.Code_NotCheck, convert = convert)
 }
 
 /**
@@ -111,17 +128,25 @@ fun <T> HttpCall<Response>.toTransformCallNotCheck(
 fun <T> HttpCall<Response>.toTransformCall(
     transform: Transform<T>
 ): HttpCall<T> {
-    return ConvertCall(call = this, codeCheck = CodeCheck.Code_Successful, convert = transform.toConvert( this))
+    return ConvertCall(
+        call = this,
+        codeCheck = CodeCheck.Code_Successful,
+        convert = transform.toConvert(this)
+    )
 }
 
-fun <T> HttpCall<Response>.toTransformCall(
-    transform: ResponseConvert<T>
+/**
+ *  Response转化为指定类型
+ *  处理httpCode>=200&&httpCode<300的请求结果
+ */
+fun <T> HttpCall<Response>.toConvertCall(
+    convert: ResponseConvert<T>
 ): HttpCall<T> {
-    return ConvertCall(call = this, codeCheck = CodeCheck.Code_Successful, convert = transform)
+    return ConvertCall(call = this, codeCheck = CodeCheck.Code_Successful, convert = convert)
 }
 
-fun<T> Transform<T>.toConvert(httpCall: HttpCall<*>):ResponseConvert<T>{
-    return TransformConvert(httpCall=httpCall, transform = this)
+fun <T> Transform<T>.toConvert(httpCall: HttpCall<*>): ResponseConvert<T> {
+    return TransformConvert(httpCall = httpCall, transform = this)
 }
 
 internal class TransformConvert<T>(val httpCall: HttpCall<*>, val transform: Transform<T>) :

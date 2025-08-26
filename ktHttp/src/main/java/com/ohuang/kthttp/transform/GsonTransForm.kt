@@ -31,7 +31,19 @@ inline fun <reified T> getGsonTypeToken(): TypeToken<T> {
     return object : TypeToken<T>() {}
 }
 
-internal val ktHttp_mGson: Gson = Gson()
+inline fun <reified T> gsonTransForm(): Transform<T> {
+    return getGsonTransForm(getGsonTypeToken<T>())
+}
+
+internal var ktHttp_mGson: Gson = Gson()
+
+/**
+ * 设置gson
+ */
+fun gsonTransFormSetGson(gson: Gson) {
+    ktHttp_mGson = gson
+}
+
 
 fun <T> getGsonTransForm(typeToken: TypeToken<T>): Transform<T> {
     return GsonTransForm(ktHttp_mGson, typeToken.type)

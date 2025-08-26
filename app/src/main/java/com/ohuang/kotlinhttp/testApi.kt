@@ -20,10 +20,13 @@ import com.ohuang.kthttp.config.onResponse
 import com.ohuang.kthttp.config.onStringBody
 import com.ohuang.kthttp.download
 import com.ohuang.kthttp.download.DownloadCall
+import com.ohuang.kthttp.httpCallNotCheck
+import com.ohuang.kthttp.jsonCall
 import com.ohuang.kthttp.okhttpBuilder
 import com.ohuang.kthttp.post
 import com.ohuang.kthttp.stringCallCode200
 import com.ohuang.kthttp.stringCallNotCheck
+import com.ohuang.kthttp.transform.ResponseConvert
 import com.ohuang.kthttp.transform.StringTransForm
 import com.ohuang.kthttp.transform.Transform
 import com.ohuang.kthttp.transform.transForm
@@ -59,6 +62,15 @@ object testApi {
      */
     inline fun <reified T> jsonTransForm(): Transform<T> {
         return gson.transForm()
+    }
+
+    fun<T>  HttpCall<HttpData<T>>.data(): HttpCall<T>{
+        return this.map {
+            if (it.data == null) {
+                throw Exception(it.message)
+            }
+            return@map it.data!!
+        }
     }
 
     /**
@@ -114,10 +126,16 @@ object testApi {
         }
     }
 
-    fun test3(): MainHttpCall<CityInfo> {
-        return request<CityInfo>() {
-            url("http://192.168.2.100:8080/main/files/test.json")
-        }.toMainHttpCall()
+    fun test3(): HttpCall<String> {
+        return request<String>() {
+            url("http://192.168.2.123:8080/main/files/test.json")
+        }
+    }
+
+    fun test4(): HttpCall<String> {
+        return mHttpClient.jsonCall<HttpData<String>> {
+            url("http://192.168.2.123:8080/main/files/test.json")
+        }.data()
     }
 
 
@@ -204,8 +222,12 @@ object testApi {
     }
 
     fun getUrlContent(url: String): HttpCall<String>{
-mHttpClient.
-        return mHttpClient.stringCallNotCheck {
+
+        return mHttpClient.httpCallNotCheck(object :ResponseConvert<String>{
+            override fun convert(response: Response): String? {
+                return response.body?.string()
+            }
+        }) {
             url(url)
 
             onRequestBuild { request ->

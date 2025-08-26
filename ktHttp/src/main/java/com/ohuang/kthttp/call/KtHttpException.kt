@@ -31,7 +31,10 @@ class EmptyBodyException(msg: String, errorResponse: ErrorResponse) : ErrorRespo
 class TransformException(msg: String, val content: String) : KtHttpException(msg)
 
 
-class ErrorResponse(private val response: Response, val errorBody: ResponseBody?) {
+class ErrorResponse(
+    private val response: Response,
+    val errorBody: ResponseBody?
+) {
 
     fun code(): Int {
         return response.code

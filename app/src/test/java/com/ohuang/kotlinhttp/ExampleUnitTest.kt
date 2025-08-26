@@ -26,7 +26,7 @@ class ExampleUnitTest {
     fun addition_isCorrect() {
         var currentTimeMillis = System.currentTimeMillis()
 
-        var waitResult = testApi.getUrlContent("http://192.168.2.123:8080/file.htm").waitResultOrNull()
+        var waitResult = testApi.test4().waitResultOrNull()
         println("waitResult=$waitResult")
         println("time=${System.currentTimeMillis() - currentTimeMillis}")
     }

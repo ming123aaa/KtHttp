@@ -1,7 +1,5 @@
 package com.ohuang.kthttp.call
 
-import com.ohuang.kthttp.HttpClient
-import com.ohuang.kthttp.KtHttpRequest
 import com.ohuang.kthttp.transform.ResponseConvert
 import com.ohuang.kthttp.transform.StringTransForm
 import com.ohuang.kthttp.transform.Transform
@@ -13,8 +11,11 @@ import okio.Buffer
 import okio.BufferedSource
 
 /**
- *  获取HttpResponse.body
- *   HttpResponse<T>转换成T型型
+ *
+ * 将HttpResponse<T>转换成T类型
+ * 获取HttpResponse.body
+ *
+ *
  */
 fun <T> HttpCall<HttpResponse<T>>.toBodyCall(): HttpCall<T> {
     return this.map {
@@ -29,16 +30,17 @@ fun <T> HttpCall<HttpResponse<T>>.toBodyCall(): HttpCall<T> {
 }
 
 /**
- *  响应转换成HttpResponse<T>
+ *  转换成HttpResponse<T>
  */
 fun <T> HttpCall<Response>.toHttpResponseCall(transform: Transform<T>): HttpCall<HttpResponse<T>> {
     return HttpResponseCall(this, transform.toConvert(this))
 }
+
 /**
- *  响应转换成HttpResponse<T>
+ *  转换成HttpResponse<T>
  */
-fun <T> HttpCall<Response>.toHttpResponseCall(transform: ResponseConvert<T>): HttpCall<HttpResponse<T>> {
-    return HttpResponseCall(this, transform)
+fun <T> HttpCall<Response>.toHttpResponseCall(convert: ResponseConvert<T>): HttpCall<HttpResponse<T>> {
+    return HttpResponseCall(this, convert)
 }
 
 /**
@@ -49,8 +51,10 @@ fun HttpCall<Response>.toStringHttpResponseCall(): HttpCall<HttpResponse<String>
 }
 
 
-
-internal class HttpResponseCall<T>(call: HttpCall<Response>, private val responseConvert: ResponseConvert<T>) :
+internal class HttpResponseCall<T>(
+    call: HttpCall<Response>,
+    private val responseConvert: ResponseConvert<T>
+) :
     KtHttpCall<HttpResponse<T>, Response>(call) {
     override fun request(
         error: (Throwable) -> Unit,
@@ -85,7 +89,7 @@ internal class HttpResponseCall<T>(call: HttpCall<Response>, private val respons
             }
 
             var value: T? = null
-            value=responseConvert.convert(mResponse)
+            value = responseConvert.convert(mResponse)
             callback(HttpResponse<T>(rawResponse, value, null))
         })
     }

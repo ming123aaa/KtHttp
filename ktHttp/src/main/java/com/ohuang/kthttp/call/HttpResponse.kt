@@ -4,7 +4,9 @@ import okhttp3.Headers
 import okhttp3.Response
 import okhttp3.ResponseBody
 
-class HttpResponse<T>(val rawResponse: Response, val body: T?, val errorBody: ResponseBody?) {
+class HttpResponse<T>(
+    val rawResponse: Response, val body: T?, val errorBody: ResponseBody?
+) {
 
     /** The raw response from the HTTP client.  */
     fun raw(): Response {
