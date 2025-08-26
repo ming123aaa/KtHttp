@@ -3,6 +3,7 @@ package com.ohuang.kthttp.call
 
 import com.ohuang.kthttp.KtHttpConfig
 import com.ohuang.kthttp.KtHttpConfigImpl
+import com.ohuang.kthttp.transform.ResponseConvert
 import com.ohuang.kthttp.transform.StringTransForm
 import com.ohuang.kthttp.transform.Transform
 import com.ohuang.kthttp.wait.ThreadWait
@@ -130,96 +131,6 @@ fun Call.toHttpCall(block: KtHttpConfig.() -> Unit = {}): HttpCall<Response> {
     return ResponseCall(this, ktHttpConfigImpl.configs)
 }
 
-/**
- *  Response转化为String
- *
- *  处理httpCode>=200&&httpCode<300的请求结果
- */
-
-fun HttpCall<Response>.toStringHttpCall(): HttpCall<String> {
-    return toTransformCall(StringTransForm)
-}
-
-/**
- *  Response转化为String
- *  只处理httpCode==200
- */
-fun HttpCall<Response>.toStringHttpCallCode200(): HttpCall<String> {
-    return toTransformCallCode200(StringTransForm)
-}
-
-/**
- *  Response转化为String
- *  只处理httpCode==200
- */
-@Deprecated(
-    message = "请替换成toStringHttpCallCode200",
-    replaceWith = ReplaceWith("toStringHttpCallCode200()")
-)
-fun HttpCall<Response>.toStringHttpCallSafe(): HttpCall<String> {
-    return toStringHttpCallCode200()
-}
-
-/**
- *  Response转化为String
- *  不检查httpCode
- */
-fun HttpCall<Response>.toStringHttpCallNotCheck(): HttpCall<String> {
-    return toTransformCallNotCheck(StringTransForm)
-}
-
-
-/**
- * 转化为指定类型
- */
-fun <T> HttpCall<String>.toTransform(transform: Transform<T>): HttpCall<T> {
-    return StringTransformCall(this, transform)
-}
-
-/**
- *  Response转化为指定类型
- *  只处理 httpCode==200
- */
-fun <T> HttpCall<Response>.toTransformCallCode200(
-    transform: Transform<T>
-): HttpCall<T> {
-    return TransformCall(call = this, codeCheck = CodeCheck.Code_200, transform = transform)
-}
-
-/**
- *  Response转化为指定类型
- *  只处理 httpCode==200
- */
-@Deprecated(
-    "请替换成toTransformCallCode200()",
-    replaceWith = ReplaceWith("toTransformCallCode200(transform)"),
-    level = DeprecationLevel.WARNING
-)
-fun <T> HttpCall<Response>.toSafeTransformCall(
-    transform: Transform<T>
-): HttpCall<T> {
-    return toTransformCallCode200(transform)
-}
-
-/**
- * Response转化为指定类型
- * 不检查httpCode
- */
-fun <T> HttpCall<Response>.toTransformCallNotCheck(
-    transform: Transform<T>
-): HttpCall<T> {
-    return TransformCall(call = this, codeCheck = CodeCheck.Code_NotCheck, transform = transform)
-}
-
-/**
- *  Response转化为指定类型
- *  处理httpCode>=200&&httpCode<300的请求结果
- */
-fun <T> HttpCall<Response>.toTransformCall(
-    transform: Transform<T>
-): HttpCall<T> {
-    return TransformCall(call = this, codeCheck = CodeCheck.Code_Successful, transform = transform)
-}
 
 /**
  * 会堵塞当前线程，更推荐使用getResult()

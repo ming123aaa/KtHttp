@@ -4,6 +4,7 @@ import com.ohuang.kthttp.call.HttpCall
 import com.ohuang.kthttp.call.ResponseCall
 import com.ohuang.kthttp.call.toStringHttpCall
 import com.ohuang.kthttp.call.toTransformCall
+import com.ohuang.kthttp.transform.ResponseConvert
 import com.ohuang.kthttp.transform.Transform
 import okhttp3.Call
 import okhttp3.OkHttpClient
@@ -70,6 +71,15 @@ class HttpClient(
      * @param block 请求参数
      */
     fun <T> httpCall(transform: Transform<T>, block: KtHttpRequest.() -> Unit): HttpCall<T> {
+        return responseCall(block).toTransformCall(transform)
+    }
+
+    /**
+     * 网络请求，获取对象内容
+     * @param transform 类型转换器
+     * @param block 请求参数
+     */
+    fun <T> httpCall(transform: ResponseConvert<T>, block: KtHttpRequest.() -> Unit): HttpCall<T> {
         return responseCall(block).toTransformCall(transform)
     }
 

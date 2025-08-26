@@ -7,7 +7,11 @@ import com.ohuang.kthttp.HttpClient
 import com.ohuang.kthttp.KtHttpRequest
 import com.ohuang.kthttp.call.ErrorResponseException
 import com.ohuang.kthttp.call.HttpCall
+
+
 import com.ohuang.kthttp.call.map
+
+import com.ohuang.kthttp.call.toBodyCall
 import com.ohuang.kthttp.config.hookResponse
 import com.ohuang.kthttp.config.hookStringBody
 import com.ohuang.kthttp.config.onError
@@ -20,6 +24,7 @@ import com.ohuang.kthttp.okhttpBuilder
 import com.ohuang.kthttp.post
 import com.ohuang.kthttp.stringCallCode200
 import com.ohuang.kthttp.stringCallNotCheck
+import com.ohuang.kthttp.transform.StringTransForm
 import com.ohuang.kthttp.transform.Transform
 import com.ohuang.kthttp.transform.transForm
 import com.ohuang.kthttp.upload.addFile
@@ -199,15 +204,15 @@ object testApi {
     }
 
     fun getUrlContent(url: String): HttpCall<String>{
-
-        return mHttpClient.stringCall {
+mHttpClient.
+        return mHttpClient.stringCallNotCheck {
             url(url)
 
             onRequestBuild { request ->
                 println("onRequestBuild-> $request")
             }
             hookRequestBuild { request ->
-                println("onRequestBuild-> $request")
+                println("hookRequestBuild-> $request")
                 return@hookRequestBuild  request
             }
 

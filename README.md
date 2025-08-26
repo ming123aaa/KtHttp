@@ -18,7 +18,7 @@ KtHttp 是一个基于 Kotlin 和 OkHttp 的轻量级 HTTP 客户端库 ，提�
 
 ```groovy
 	dependencies {
-	        implementation 'com.github.ming123aaa:KtHttp:1.1.6'
+	        implementation 'com.github.ming123aaa:KtHttp:1.1.8'
 	}
 ```
 
@@ -218,7 +218,7 @@ var mHttpClient = HttpClient(globalKtConfigCall = {//全局配置,会被请求�
         println("全局onStringBody:$it")
     }
 }, forceKtConfigCall = {
-    onError { e,call,r-> //出现错误回调
+    onError { error,call,respose-> //出现错误回调
         println("强制onError:e=$e   url=${call.request().url}") }
 })
     /**
@@ -248,5 +248,7 @@ var mHttpClient = HttpClient(globalKtConfigCall = {//全局配置,会被请求�
     }
 
 ```
+
+
 
 

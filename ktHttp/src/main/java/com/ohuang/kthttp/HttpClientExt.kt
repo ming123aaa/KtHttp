@@ -2,12 +2,18 @@ package com.ohuang.kthttp
 
 
 import com.ohuang.kthttp.call.HttpCall
+import com.ohuang.kthttp.call.HttpResponse
+import com.ohuang.kthttp.call.toHttpResponseCall
 import com.ohuang.kthttp.call.toStringHttpCallCode200
 import com.ohuang.kthttp.call.toStringHttpCallNotCheck
+import com.ohuang.kthttp.call.toStringHttpResponseCall
 import com.ohuang.kthttp.call.toTransformCallCode200
 import com.ohuang.kthttp.call.toTransformCallNotCheck
 import com.ohuang.kthttp.download.DownloadCall
+import com.ohuang.kthttp.transform.ResponseConvert
 import com.ohuang.kthttp.transform.Transform
+import com.ohuang.kthttp.transform.getGsonTransForm
+import com.ohuang.kthttp.transform.getGsonTypeToken
 import java.io.File
 import java.io.RandomAccessFile
 
@@ -57,6 +63,20 @@ fun <T> HttpClient.httpCallCode200(
     return responseCall(block).toTransformCallCode200(transform)
 }
 
+
+/**
+ * 网络请求，获取对象内容
+ * 只处理httpCode==200
+ * @param transform 类型转换器
+ * @param block 请求参数
+ */
+fun <T> HttpClient.httpCallCode200(
+    transform: ResponseConvert<T>,
+    block: KtHttpRequest.() -> Unit
+): HttpCall<T> {
+    return responseCall(block).toTransformCallCode200(transform)
+}
+
 /**
  * 网络请求，获取对象内容
  * 不检查httpCode
@@ -68,6 +88,49 @@ fun <T> HttpClient.httpCallNotCheck(
     block: KtHttpRequest.() -> Unit
 ): HttpCall<T> {
     return responseCall(block).toTransformCallNotCheck(transform)
+}
+
+/**
+ * 网络请求，获取对象内容
+ * 不检查httpCode
+ * @param transform 类型转换器
+ * @param block 请求参数
+ */
+fun <T> HttpClient.httpCallNotCheck(
+    transform: ResponseConvert<T>,
+    block: KtHttpRequest.() -> Unit
+): HttpCall<T> {
+    return responseCall(block).toTransformCallNotCheck(transform)
+}
+
+
+/**
+ *  返回HttpResponse<T> 类型
+ */
+fun <T> HttpClient.httpResponseCall(
+    transform: Transform<T>,
+    block: KtHttpRequest.() -> Unit
+): HttpCall<HttpResponse<T>> {
+    return responseCall(block).toHttpResponseCall(transform)
+}
+
+/**
+ *  返回HttpResponse<T> 类型
+ */
+fun <T> HttpClient.httpResponseCall(
+    transform: ResponseConvert<T>,
+    block: KtHttpRequest.() -> Unit
+): HttpCall<HttpResponse<T>> {
+    return responseCall(block).toHttpResponseCall(transform)
+}
+
+/**
+ *  返回HttpResponse<String> 类型
+ */
+fun HttpClient.stringHttpResponseCall(
+    block: KtHttpRequest.() -> Unit
+): HttpCall<HttpResponse<String>> {
+    return responseCall(block).toStringHttpResponseCall()
 }
 
 /**
