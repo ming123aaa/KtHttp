@@ -18,7 +18,7 @@ KtHttp 是一个基于 Kotlin 和 OkHttp 的轻量级 HTTP 客户端库 ，提�
 
 ```groovy
 	dependencies {
-	        implementation 'com.github.ming123aaa:KtHttp:1.1.8'
+	        implementation 'com.github.ming123aaa:KtHttp:1.2.1'
 	}
 ```
 
@@ -55,12 +55,29 @@ object TestApi {
         return gson.transForm()
     }
 
+      /**
+     * 获取封装的数据
+     */
+    fun test(): HttpCall<CityInfo> {
+        return request<CityInfo>() {
+            url("http://192.168.2.100:8080/main/files/test.json")
+        }
+    }
+    
+    fun test1(): HttpCall<HttpData<CityInfo>> {
+        //使用jsonCall 请求json数据
+        return mHttpClient.jsonCall<HttpData<CityInfo>> {
+            url("http://192.168.2.67:8080/main/files/test.json")
+        }
+    }
+
     fun test2(): HttpCall<HttpData<CityInfo>> {
         //使用httpCall 可生成对象   需要传入Transform将字符串转成对象
         return mHttpClient.httpCall<HttpData<CityInfo>>(jsonTransForm()) {
             url("http://192.168.2.67:8080/main/files/test.json")
         }
     }
+   
 
     fun getFileHtml(): HttpCall<String> {
         /**
