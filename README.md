@@ -18,7 +18,7 @@ KtHttp 是一个基于 Kotlin 和 OkHttp 的轻量级 HTTP 客户端库 ，提�
 
 ```groovy
 	dependencies {
-	        implementation 'com.github.ming123aaa:KtHttp:1.2.1'
+	        implementation 'com.github.ming123aaa:KtHttp:1.2.2'
 	}
 ```
 
