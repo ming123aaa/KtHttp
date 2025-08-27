@@ -12,19 +12,18 @@ fun interface StringTransformHook {
 
 /**
  * 拦截Body字符串，返回新的字符串
+ * 重复调用[hookStringBody],[hookStringResponse]会覆盖
  *
  */
 fun KtHttpConfig.hookStringBody(block: (String) -> String) {
-    setConfig(key_hookStringBody, object : StringTransformHook {
-        override fun hook(response: Response): String {
-            return block(response.body!!.string())
-        }
+    hookStringResponse(block={response->
+        block(response.body!!.string())
     })
 }
 
 /**
  * 拦截Body字符串，返回新的字符串
- *
+ * 重复调用[hookStringBody],[hookStringResponse]会覆盖
  */
 fun KtHttpConfig.hookStringResponse(block: (Response) -> String) {
     setConfig(key_hookStringBody, object : StringTransformHook {

@@ -1,8 +1,11 @@
 package com.ohuang.kthttp.download
 
+import com.ohuang.kthttp.call.ErrorResponse
+import com.ohuang.kthttp.call.ErrorResponseException
 import com.ohuang.kthttp.call.HttpCall
 import com.ohuang.kthttp.call.KtHttpCall
 import com.ohuang.kthttp.call.KtHttpException
+import com.ohuang.kthttp.call.bufferResponseBody
 import okhttp3.Response
 import java.io.File
 import java.io.IOException
@@ -23,12 +26,21 @@ open class DownloadCall(
 
     protected fun download(response: Response) {
         // 1. 检查响应是否成功
-        if (!(response.code==200||response.code==206)) {
-            throw KtHttpException("HTTP ${response.code}: ${response.message}")
+        if (!(response.code == 200 || response.code == 206)) {
+            throw ErrorResponseException(
+                msg = "HTTP ${response.code}: ${response.message}",
+                errorResponse = ErrorResponse(
+                    response = response,
+                    errorBody = bufferResponseBody(response.body)
+                )
+            )
         }
 
         // 2. 获取响应体和总大小
-        val responseBody = response.body ?: throw KtHttpException("Response body is null")
+        val responseBody = response.body ?: throw ErrorResponseException(
+            msg = "Response body is null",
+            errorResponse = ErrorResponse(response = response, errorBody = null)
+        )
         val totalSize = responseBody.contentLength() // 文件总大小
         // 断点续传时，实际需要下载的字节数
         val bytesToDownload = getTotalSize(response, totalSize)
@@ -42,8 +54,8 @@ open class DownloadCall(
             fileChannel = randomAccessFile.channel
 
             // 4. 设置文件指针到断点位置
-            if (rangeStart > 0&&response.code==206) {
-                if (rangeStart>bytesToDownload){
+            if (rangeStart > 0 && response.code == 206) {
+                if (rangeStart > bytesToDownload) {
                     throw KtHttpException("rangeStart > total size")
                 }
                 // 移动到断点位置，准备追加写入

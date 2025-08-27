@@ -39,12 +39,29 @@ open class HttpRequest(internal var builder: Request.Builder) {
     private var requestBuildHook: ((Request) -> Request)? = null
     private var requestBuildCall: ((Request) -> Unit)? = null
 
+    /**
+     * 可修改Request
+     * 重复调用会覆盖
+     */
     fun hookRequestBuild(block: (Request) -> Request) {
         requestBuildHook = block
     }
 
-    fun onRequestBuild(block: (Request) -> Unit) {
-        requestBuildCall = block
+    /**
+     *  @param isOverride 是否覆盖原有的回调
+     */
+    fun onRequestBuild(isOverride: Boolean = false, block: (Request) -> Unit) {
+        var newCall= block
+        if (!isOverride) {
+            var oldCall = requestBuildCall
+            if (oldCall != null) {
+                newCall = { request ->
+                    oldCall.invoke(request)
+                    block.invoke(request)
+                }
+            }
+        }
+        requestBuildCall = newCall
     }
 
     internal fun build(): Request {

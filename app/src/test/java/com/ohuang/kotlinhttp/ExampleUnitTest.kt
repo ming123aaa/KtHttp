@@ -1,6 +1,7 @@
 package com.ohuang.kotlinhttp
 
 import com.ohuang.kthttp.call.asFlow
+import com.ohuang.kthttp.call.await
 import com.ohuang.kthttp.call.getResult
 import com.ohuang.kthttp.call.getResultSafe
 import com.ohuang.kthttp.call.waitResult
@@ -24,10 +25,15 @@ import java.io.File
 class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
-        var currentTimeMillis = System.currentTimeMillis()
+        runBlocking {
+            var currentTimeMillis = System.currentTimeMillis()
 
-        var waitResult = testApi.test4().waitResultOrNull()
-        println("waitResult=$waitResult")
-        println("time=${System.currentTimeMillis() - currentTimeMillis}")
+            var waitResult = testApi.getUrlContent("http://192.168.2.123:8080/file.html1").await()
+
+
+            println("waitResult=${waitResult}")
+            println("time=${System.currentTimeMillis() - currentTimeMillis}")
+        }
+
     }
 }

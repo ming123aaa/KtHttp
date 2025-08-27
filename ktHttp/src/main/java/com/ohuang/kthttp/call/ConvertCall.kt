@@ -151,26 +151,17 @@ fun <T> Transform<T>.toConvert(httpCall: HttpCall<*>): ResponseConvert<T> {
 
 internal class TransformConvert<T>(val httpCall: HttpCall<*>, val transform: Transform<T>) :
     ResponseConvert<T> {
-    override fun convert(response: Response): T? {
+    override fun convert(response: Response): T {
         val string = httpCall.hookStringBody(response)
         httpCall.onStringBody(string, response)
         var value: T? = null
-        if (string.isNotEmpty()) {
-            value = transform.transform(string)
-        } else {
-            throw EmptyBodyException(
-                msg = "body string is Empty",
-                errorResponse = ErrorResponse(response = response, errorBody = null)
-            )
-        }
-        if (value == null) {
-            throw TransformException(msg = "transform error", content = string)
-        }
+        value = transform.transform(string)
+
         return value
     }
 }
 
-private fun buffer(body: ResponseBody?): ResponseBody? {
+internal fun bufferResponseBody(body: ResponseBody?): ResponseBody? {
     if (body == null) {
         return null
     }
@@ -186,9 +177,6 @@ internal class StringTransformCall<T>(call: HttpCall<String>, private val transf
         call.request(error) {
             var value: T? = null
             value = transform.transform(it)
-            if (value == null) {
-                throw TransformException(msg = "transform error", content = it)
-            }
             callback(value)
         }
     }
@@ -209,13 +197,8 @@ internal class ConvertCall<T>(
     override fun request(error: (Throwable) -> Unit, callback: (T) -> Unit) {
         call.request(error = error, callback = {
             checkHttpCode(it)
-            var value = convert.convert(it)
-            if (value == null) {
-                throw ErrorResponseException(
-                    msg = "convert error " + convert.javaClass.name,
-                    errorResponse = ErrorResponse(response = it, errorBody = null)
-                )
-            }
+            var value: T? = null
+            value = convert.convert(it)
             callback(value)
         })
     }
@@ -235,7 +218,7 @@ internal class ConvertCall<T>(
             var errorResponse = ErrorResponse(response = response, errorBody = null)
             try {
                 errorResponse =
-                    ErrorResponse(response = response, errorBody = buffer(response.body))
+                    ErrorResponse(response = response, errorBody = bufferResponseBody(response.body))
                 response.close()
             } finally {
                 if (codeCheck == CodeCheck.Code_200) {

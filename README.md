@@ -266,6 +266,23 @@ var mHttpClient = HttpClient(globalKtConfigCall = {//全局配置,会被请求�
 
 ```
 
+### 异常处理
+```kotlin
+   fun testCoroutine() {
+    lifecycleScope.launch {
+        try {
+            val cityInfo = testApi.test().getResult()
+        } catch (e: Exception) {
+            if(e is ErrorResponseException){
+               var errorResponse=e.errorResponse //可以获取错误响应
+            }
+            e.printStackTrace()
+        }
+    }
+}
+        
+
+```
 
 
 

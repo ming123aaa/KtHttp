@@ -10,11 +10,11 @@ import java.lang.reflect.Type
  */
 class GsonTransForm<T>(var gson: Gson, var typeToken: Type) : Transform<T> {
 
-    override fun transform(string: String): T? {
+    override fun transform(string: String): T {
         return gson.fromJson<T>(
             string,
             typeToken
-        )
+        )!!
     }
 }
 

@@ -12,6 +12,8 @@ fun interface ResponseHook {
 
 /**
  *  可修改Response
+ *
+ *  重复调用会覆盖
  */
 fun KtHttpConfig.hookResponse(block: (Response)-> Response) {
     setConfig(key_responseHook, object :ResponseHook{

@@ -36,7 +36,9 @@ fun <T, B> HttpCall<T>.map(
 suspend fun <T> HttpCall<T>.getResult(isCancel: Boolean = true): T {
     return suspendCancellableCoroutine { continuation ->
         if (isCancel) {
-            continuation.invokeOnCancellation { this@getResult.cancel() }
+            continuation.invokeOnCancellation {
+                this@getResult.cancel()
+            }
         }
         this@getResult.request(error = {
             if (continuation.isActive) {

@@ -23,7 +23,7 @@ fun <T> HttpCall<HttpResponse<T>>.toBodyCall(): HttpCall<T> {
             return@map it.body
         }
         throw EmptyBodyException(
-            msg = "KtResponse body is null",
+            msg = "HttpResponse body is null",
             errorResponse = ErrorResponse(response = it.raw(), errorBody = it.errorBody)
         )
     }
@@ -73,7 +73,7 @@ internal class HttpResponseCall<T>(
                 var mHttpResponse = HttpResponse<T>(rawResponse, null, null)
                 try {
                     // Buffer the entire body to avoid future I/O.
-                    val bufferedBody: ResponseBody? = buffer(rawBody)
+                    val bufferedBody: ResponseBody? = bufferResponseBody(rawBody)
                     mHttpResponse = HttpResponse<T>(rawResponse, null, bufferedBody)
                 } finally {
                     rawBody.close()
@@ -96,14 +96,7 @@ internal class HttpResponseCall<T>(
 }
 
 
-private fun buffer(body: ResponseBody?): ResponseBody? {
-    if (body == null) {
-        return null
-    }
-    val buffer: Buffer = Buffer()
-    body.source().readAll(buffer)
-    return buffer.asResponseBody(body.contentType(), body.contentLength())
-}
+
 
 internal class NoContentResponseBody(
     private val contentType: MediaType?,

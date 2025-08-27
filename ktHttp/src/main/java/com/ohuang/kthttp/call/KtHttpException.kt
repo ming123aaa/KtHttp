@@ -5,7 +5,7 @@ import okhttp3.Response
 import okhttp3.ResponseBody
 
 
-open class KtHttpException(msg: String) : Exception(msg)
+open class KtHttpException(msg: String) : RuntimeException(msg)
 open class ErrorResponseException(msg: String, val errorResponse: ErrorResponse) :
     KtHttpException(msg) {
 
@@ -28,13 +28,19 @@ class EmptyBodyException(msg: String, errorResponse: ErrorResponse) : ErrorRespo
     errorResponse
 )
 
-class TransformException(msg: String, val content: String) : KtHttpException(msg)
-
 
 class ErrorResponse(
     private val response: Response,
     val errorBody: ResponseBody?
 ) {
+
+    fun raw(): Response {
+        return response
+    }
+
+    fun url(): String {
+        return response.request.url.toString()
+    }
 
     fun code(): Int {
         return response.code
@@ -48,8 +54,15 @@ class ErrorResponse(
         return response.headers
     }
 
+    private var errorBodyString: String? = null
+
     fun errorBodyString(): String {
-        return errorBody?.string() ?: ""
+        if (errorBodyString != null) {
+            return errorBodyString!!
+        }
+        errorBodyString = errorBody?.string() ?: ""
+        return errorBodyString ?: ""
+        return ""
     }
 
     override fun toString(): String {

@@ -1,5 +1,6 @@
 package com.ohuang.kotlinhttp
 
+import androidx.core.R
 import com.google.gson.Gson
 import com.ohuang.kotlinhttp.data.CityInfo
 import com.ohuang.kotlinhttp.data.HttpData
@@ -14,6 +15,7 @@ import com.ohuang.kthttp.call.map
 import com.ohuang.kthttp.call.toBodyCall
 import com.ohuang.kthttp.config.hookResponse
 import com.ohuang.kthttp.config.hookStringBody
+import com.ohuang.kthttp.config.hookStringResponse
 import com.ohuang.kthttp.config.onError
 import com.ohuang.kthttp.config.onRequest
 import com.ohuang.kthttp.config.onResponse
@@ -46,8 +48,10 @@ object testApi {
 
     }, forceKtConfigCall = {
         onError { e, call, r ->
+            e.printStackTrace()
             if (e is ErrorResponseException){
                 println(e.errorResponse.toString())
+                println("errorBodyString="+e.errorResponse.errorBodyString())
                 println("errorBodyString="+e.errorResponse.errorBodyString())
 
             }
@@ -221,26 +225,49 @@ object testApi {
         }
     }
 
+    fun getUrlResponse(url: String): HttpCall<Response>{
+        return mHttpClient.responseCall {
+            url(url)
+        }
+    }
+
     fun getUrlContent(url: String): HttpCall<String>{
 
-        return mHttpClient.httpCallNotCheck(object :ResponseConvert<String>{
-            override fun convert(response: Response): String? {
-                return response.body?.string()
-            }
-        }) {
+        return mHttpClient.stringCall {
             url(url)
 
             onRequestBuild { request ->
                 println("onRequestBuild-> $request")
             }
+            onRequestBuild { request ->
+                println("onRequestBuild2-> $request")
+            }
             hookRequestBuild { request ->
                 println("hookRequestBuild-> $request")
                 return@hookRequestBuild  request
             }
+            hookRequestBuild {  }
 
             onRequest { request ->
                 println("onRequest-> $request")
             }
+            onRequest(true)  { request ->
+                println("onRequest-> $request")
+            }
+            onRequest{ request ->
+                println("onRequest-> $request")
+            }
+
+            onError { throwable ->
+                println("onError1-> $throwable")
+            }
+            onError(true) { throwable ->
+                println("onError2-> $throwable")
+            }
+            onError { throwable ->
+                println("onError3-> $throwable")
+            }
+            onStringBody {  }
 
         }
     }

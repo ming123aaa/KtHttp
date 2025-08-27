@@ -10,4 +10,9 @@ class KtHttpRequest(ktHttpConfigImpl:KtHttpConfigImpl, builder:Request.Builder) 
     override fun setConfig(name: String, value: Any) {
         configs[name] = value
     }
+
+    override fun getConfig(name: String): Any? {
+        if (!configs.containsKey(name)) return null
+        return configs[name]
+    }
 }
