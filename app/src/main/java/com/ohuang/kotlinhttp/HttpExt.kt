@@ -18,73 +18,57 @@ import java.io.File
 
 private var mHandler = Handler(Looper.getMainLooper())
 
-/**
- * 回调结果运行在主线程
- */
-fun <T> HttpCall<T>.requestOnMainThread(error: (Throwable) -> Unit = {}, callback: (T) -> Unit) {
-
-    request({
-        mHandler.post { error.invoke(it) }
-    }, {
-        mHandler.post { callback.invoke(it) }
-    })
-
-}
-
-/**
- *
- * 绑定生命周期，回调结果运行在主线程
- */
-fun <T> HttpCall<T>.requestOnActivity(
-    lifecycleOwner: LifecycleOwner,
-    error: (Throwable) -> Unit = {},
-    callback: (T) -> Unit
-) {
-    lifecycleOwner.lifecycleScope.launch {
-        val result = getResultSafe { error.invoke(it) }
-        if (result != null) {
-            callback.invoke(result)
-        }
-    }
-}
-
-/**
- * 使用livedata返回结果
- */
-fun <T> HttpCall<T>.requestOnLivedata(
-    error: (Throwable) -> Unit = {},
-    livedata: MutableLiveData<T>
-) {
-    request({
-        mHandler.post { error.invoke(it) }
-    }, {
-        livedata.postValue(it)
-    })
-}
-
 fun <T> HttpCall<T>.toMainHttpCall(): MainHttpCall<T> {
     return MainHttpCall(this)
 }
 
 /**
- * 提供一些拓展的request方法
+ * 提供一些拓展的request方法,方便在java中使用
  */
 class MainHttpCall<T>(call: HttpCall<T>) : KtHttpCall<T, T>(call) {
 
-    fun requestOnMainThread(error: (Throwable) -> Unit = {}, callback: (T) -> Unit) {
-        call.requestOnMainThread(error, callback)
+    companion object{
+        fun<T> create(call: HttpCall<T>): MainHttpCall<T> {
+            return MainHttpCall(call)
+        }
     }
 
+    /**
+     * 回调运行在主线程
+     */
+    fun requestOnMainThread(error: (Throwable) -> Unit = {}, callback: (T) -> Unit) {
+        request({
+            mHandler.post { error.invoke(it) }
+        }, {
+            mHandler.post { callback.invoke(it) }
+        })
+    }
+
+    /**
+     * 回调运行在主线程,并绑定生命周期
+     */
     fun requestOnActivity(
         lifecycleOwner: LifecycleOwner,
         error: (Throwable) -> Unit = {},
         callback: (T) -> Unit
     ) {
-        call.requestOnActivity(lifecycleOwner, error, callback)
+        lifecycleOwner.lifecycleScope.launch {
+            val result = getResultSafe { error.invoke(it) }
+            if (result != null) {
+                callback.invoke(result)
+            }
+        }
     }
 
+    /**
+     * 回调在主线程,livedata方式
+     */
     fun requestOnLivedata(error: (Throwable) -> Unit = {}, livedata: MutableLiveData<T>) {
-        call.requestOnLivedata(error, livedata)
+        request({
+            mHandler.post { error.invoke(it) }
+        }, {
+            livedata.postValue(it)
+        })
     }
 
     override fun request(error: (Throwable) -> Unit, callback: (T) -> Unit) {
@@ -102,45 +86,5 @@ class MainHttpCall<T>(call: HttpCall<T>) : KtHttpCall<T, T>(call) {
 
 }
 
-/**
- * 文件下载
- */
-fun HttpCall<Response>.toFileCall(file: File): FileHttpCall {
-    return FileHttpCall(file, this)
-}
 
-/**
- *  文件下载
- */
-class FileHttpCall(private var file: File, call: HttpCall<Response>) :
-    KtHttpCall<File, Response>(call) {
-
-    override fun request(error: (Throwable) -> Unit, callback: (File) -> Unit) {
-        call.request(error = error) { response ->
-            var byteStream = response.body?.byteStream()
-            if (byteStream != null) {
-                byteStream.use {
-                    if (!file.exists()) {
-                        if (file.getParentFile() != null) {
-                            file.getParentFile()?.mkdirs();
-                        }
-                        file.createNewFile();
-                    }
-                    file.outputStream().use { output ->
-                        it.copyTo(output) // 使用缓冲流自动复制
-                    }
-                    callback.invoke(file)
-                }
-            } else {
-                error(
-                    EmptyBodyException(
-                        "body is null",
-                        errorResponse = ErrorResponse(response = response, errorBody = null)
-                    )
-                )
-                return@request
-            }
-        }
-    }
-}
 

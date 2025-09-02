@@ -85,7 +85,7 @@ class ViewActivity : AppCompatActivity() {
      * requestOnMainThread可在主线程请求
      */
     fun test() {
-        testApi.test().requestOnMainThread({
+        MainHttpCall.create(testApi.test()).requestOnMainThread({
             tv_index.text = it.message
         }) {
             tv_index.text = it.city
