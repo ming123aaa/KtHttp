@@ -28,7 +28,9 @@ class ExampleUnitTest {
         runBlocking {
             var currentTimeMillis = System.currentTimeMillis()
 
-            var waitResult = testApi.getUrlContent("http://192.168.2.123:8080/file.html1").await()
+            var waitResult = testApi.download(File("D:\\ali213\\Download\\a.png"),"https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimage109.360doc.com%2FDownloadImg%2F2025%2F04%2F0321%2F296122601_4_20250403090445718&refer=http%3A%2F%2Fimage109.360doc.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1759655631&t=029ebfc1149170d60b65918d57bb0437", onProcess =  {p,t->
+                println("p=$p,t=$t")
+            }).await()
 
 
             println("waitResult=${waitResult}")

@@ -185,7 +185,11 @@ fun HttpClient.download(
     var lastIndex = 0L
     if (isContinueDownload) {
         val randomAccessFile = RandomAccessFile(file, "rw")
-        lastIndex = randomAccessFile.length()
+        lastIndex = if (randomAccessFile.length() > 1) {
+            randomAccessFile.length() -1//避免文件已完全下载时 导致的服务端416错误
+        } else {
+            0
+        }
     }
     return DownloadCall(
         file = file,

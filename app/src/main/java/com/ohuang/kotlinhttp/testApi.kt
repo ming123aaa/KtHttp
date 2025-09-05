@@ -195,9 +195,9 @@ object testApi {
         }
     }
 
-    fun download(file: File, onProcess: (current: Long, total: Long) -> Unit): DownloadCall {
+    fun download(file: File,url: String, onProcess: (current: Long, total: Long) -> Unit): DownloadCall {
         return mHttpClient.download(file, isContinueDownload = true, onProcess = onProcess) {
-            urlParams("http://192.168.2.123:8080/main/files/base.apk") {
+            urlParams(url) {
             }
         }
     }
@@ -246,7 +246,7 @@ object testApi {
                 println("hookRequestBuild-> $request")
                 return@hookRequestBuild  request
             }
-            hookRequestBuild {  }
+
 
             onRequest { request ->
                 println("onRequest-> $request")
