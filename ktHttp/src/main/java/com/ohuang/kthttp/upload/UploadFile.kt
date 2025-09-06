@@ -9,8 +9,9 @@ import okhttp3.MultipartBody
 import java.io.File
 
 
-
-
+/**
+ *  使用MultipartBody
+ */
 fun HttpRequest.postMultipartBody(bodybuilder: MultipartBody.Builder.() -> Unit) {
     var requestBodyBuild = MultipartBody.Builder()
         .setType(MultipartBody.FORM)
@@ -18,11 +19,16 @@ fun HttpRequest.postMultipartBody(bodybuilder: MultipartBody.Builder.() -> Unit)
     builder.post(requestBodyBuild.build())
 }
 
+/**
+ *  使用MultipartBody,配合[addFile]可进行文件上传
+ */
 fun HttpRequest.postUploadFile(bodybuilder: MultipartBody.Builder.() -> Unit) {
     postMultipartBody(bodybuilder)
 }
 
-
+/**
+ * 上传文件
+ */
 fun MultipartBody.Builder.addFile(
     key: String,
     file: File,

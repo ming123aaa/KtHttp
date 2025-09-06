@@ -16,6 +16,10 @@ open class ErrorResponseException(msg: String, val errorResponse: ErrorResponse)
     fun httpMessage(): String {
         return errorResponse.message()
     }
+
+    fun errorBodyString(): String {
+        return errorResponse.errorBodyString()
+    }
 }
 
 class CodeNot200Exception(msg: String, errorResponse: ErrorResponse) : ErrorResponseException(
@@ -28,12 +32,16 @@ class EmptyBodyException(msg: String, errorResponse: ErrorResponse) : ErrorRespo
     errorResponse
 )
 
-
+/**
+ * 错误响应
+ */
 class ErrorResponse(
     private val response: Response,
     val errorBody: ResponseBody?
 ) {
-
+    /**
+     * 原始响应
+     */
     fun raw(): Response {
         return response
     }
@@ -56,13 +64,20 @@ class ErrorResponse(
 
     private var errorBodyString: String? = null
 
+    /**
+     * 错误响应体内容
+     */
     fun errorBodyString(): String {
         if (errorBodyString != null) {
             return errorBodyString!!
         }
-        errorBodyString = errorBody?.string() ?: ""
+        try {
+              errorBodyString = errorBody?.string() ?: ""
+        }catch(e: Throwable) {
+
+        }
         return errorBodyString ?: ""
-        return ""
+    
     }
 
     override fun toString(): String {

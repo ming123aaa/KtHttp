@@ -95,14 +95,14 @@ fun HttpRequest.post(params: Map<String, String>) {
  *  提交的是json数据类型
  */
 fun HttpRequest.postJson(json: String) {
-    builder.post(json.toRequestBody("application/json; charset=utf-8".toMediaType()))
+    builder.post(body = json.toRequestBody("application/json; charset=utf-8".toMediaType()))
 }
 /**
  *  post请求
  *  提交的是json数据类型
  */
 fun HttpRequest.postJsonForAny(obj: Any) {
-    postJson(ktHttp_mGson.toJson(obj))
+    postJson(json = ktHttp_mGson.toJson(obj))
 }
 
 
@@ -111,7 +111,7 @@ fun HttpRequest.postJsonForAny(obj: Any) {
  *  提交的是json数据类型
  */
 fun HttpRequest.postJson(params: Map<String, String>) {
-    postJson(ktHttp_mGson.toJson(params))
+    postJson(json = ktHttp_mGson.toJson(params))
 }
 /**
  * post请求
@@ -120,7 +120,7 @@ fun HttpRequest.postJson(params: Map<String, String>) {
 fun HttpRequest.postJson(block: RequestParams.() -> Unit = {}) {
     val requestParams = RequestParams()
     block.invoke(requestParams)
-    postJson(requestParams.map)
+    postJson(params = requestParams.map)
 }
 
 /**
