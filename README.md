@@ -6,6 +6,8 @@ KtHttp 是一个基于 Kotlin 和 OkHttp 的轻量级 HTTP 客户端库 ，提�
 
 ## 依赖
 
+kotlin版本最好大于1.8.20
+
 ```groovy
 	dependencyResolutionManagement {
 		repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
