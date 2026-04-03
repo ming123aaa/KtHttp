@@ -22,7 +22,7 @@ kotlin版本最好大于1.8.20
 
 ```kotlin
 dependencies {
-    implementation("com.github.ming123aaa:KtHttp:1.2.4")
+    implementation("com.github.ming123aaa:KtHttp:1.2.5")
 }
 ```
 
@@ -208,7 +208,7 @@ class ViewActivity : AppCompatActivity() {
     fun testCoroutine() {
         lifecycleScope.launch {
             try {
-                val cityInfo = testApi.test().getResult()
+                val cityInfo = testApi.test().await()
                 tv_index.text = cityInfo.city
             } catch (e: Exception) {
                 tv_index.text = e.message
@@ -223,7 +223,7 @@ class ViewActivity : AppCompatActivity() {
     fun testCoroutine2() {
         lifecycleScope.launch {
             // 可不需要处理异常 如果出现异常数据返回为 null
-            val cityInfo = testApi.test().getResultOrNull() { // 处理异常
+            val cityInfo = testApi.test().awaitOrNull() { // 处理异常
                 tv_index.text = it.message
             }
             tv_index.text = cityInfo?.city

@@ -168,6 +168,9 @@ fun <T> HttpCall<T>.waitResultOrNull(timeOut: Long = 0, block: (Throwable) -> Un
 
 }
 
+/**
+ * 抛出 协程取消异常
+ */
 inline fun throwCancellationException(e: Throwable, call: (e: Throwable) -> Unit = {}) {
     if (e is CancellationException) {
         throw e

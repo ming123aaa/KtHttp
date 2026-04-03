@@ -13,6 +13,7 @@ import com.ohuang.kotlinhttp.R
 import com.ohuang.kthttp.call.HttpCall
 import com.ohuang.kthttp.call.asFlow
 import com.ohuang.kthttp.call.await
+import com.ohuang.kthttp.call.awaitOrNull
 import com.ohuang.kthttp.call.getResult
 import com.ohuang.kthttp.call.getResultOrNull
 import com.ohuang.kthttp.download.DownloadCall
@@ -101,7 +102,7 @@ class ViewActivity : AppCompatActivity() {
     fun testCoroutine() {
         lifecycleScope.launch {
             try {
-                val cityInfo = testApi.test().getResult()
+                val cityInfo = testApi.test().await()
                 tv_index.text = cityInfo.city
             } catch (e: Exception) {
                 tv_index.text = e.message
@@ -115,7 +116,7 @@ class ViewActivity : AppCompatActivity() {
     fun testCoroutine2() {
         lifecycleScope.launch {
             //可不需要处理异常
-            val cityInfo = testApi.test().getResultOrNull() { //处理异常
+            val cityInfo = testApi.test().awaitOrNull() { //处理异常
                 tv_index.text = it.message
             }
             tv_index.text = cityInfo?.city
