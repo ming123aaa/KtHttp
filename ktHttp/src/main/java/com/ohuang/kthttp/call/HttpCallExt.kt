@@ -77,11 +77,9 @@ suspend fun <T> HttpCall<T>.getResultOrNull(
     try {
         return getResult(isCancel = isCancel)
     } catch (e: Throwable) {
-        if (e is CancellationException) {//处理协程取消异常
-            throw e
-        } else {
-            block(e)
-        }
+        throwCancellationException(e)
+        block(e)
+
     }
     return null
 }
@@ -169,3 +167,11 @@ fun <T> HttpCall<T>.waitResultOrNull(timeOut: Long = 0, block: (Throwable) -> Un
     }
 
 }
+
+inline fun throwCancellationException(e: Throwable, call: (e: Throwable) -> Unit = {}) {
+    if (e is CancellationException) {
+        throw e
+    }
+    call(e)
+}
+

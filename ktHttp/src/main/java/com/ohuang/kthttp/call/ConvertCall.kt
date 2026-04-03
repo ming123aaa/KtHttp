@@ -156,7 +156,10 @@ internal class TransformConvert<T>(val httpCall: HttpCall<*>, val transform: Tra
         httpCall.onStringBody(string, response)
         var value: T? = null
         value = transform.transform(string)
-
+        try {
+            response.close()
+        } catch (e: Throwable) {
+        }
         return value
     }
 }
@@ -218,7 +221,10 @@ internal class ConvertCall<T>(
             var errorResponse = ErrorResponse(response = response, errorBody = null)
             try {
                 errorResponse =
-                    ErrorResponse(response = response, errorBody = bufferResponseBody(response.body))
+                    ErrorResponse(
+                        response = response,
+                        errorBody = bufferResponseBody(response.body)
+                    )
                 response.close()
             } finally {
                 if (codeCheck == CodeCheck.Code_200) {

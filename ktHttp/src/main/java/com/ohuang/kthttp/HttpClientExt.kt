@@ -3,6 +3,9 @@ package com.ohuang.kthttp
 
 import com.ohuang.kthttp.call.HttpCall
 import com.ohuang.kthttp.call.HttpResponse
+import com.ohuang.kthttp.call.await
+import com.ohuang.kthttp.call.awaitOrNull
+import com.ohuang.kthttp.call.throwCancellationException
 import com.ohuang.kthttp.call.toConvertCallCode200
 import com.ohuang.kthttp.call.toConvertCallNotCheck
 import com.ohuang.kthttp.call.toHttpResponseCall
@@ -12,9 +15,11 @@ import com.ohuang.kthttp.call.toStringHttpResponseCall
 import com.ohuang.kthttp.call.toTransformCallCode200
 import com.ohuang.kthttp.call.toTransformCallNotCheck
 import com.ohuang.kthttp.download.DownloadCall
+import com.ohuang.kthttp.download.DownloadFileSizeCall
 import com.ohuang.kthttp.transform.ResponseConvert
 import com.ohuang.kthttp.transform.Transform
 import com.ohuang.kthttp.transform.gsonTransForm
+import kotlinx.coroutines.delay
 import java.io.File
 import java.io.RandomAccessFile
 
@@ -181,12 +186,12 @@ fun HttpClient.download(
     isContinueDownload: Boolean = false,
     onProcess: (current: Long, total: Long) -> Unit = { _, _ -> },
     block: KtHttpRequest.() -> Unit
-): DownloadCall {
+): HttpCall<File> {
     var lastIndex = 0L
-    if (isContinueDownload) {
+    if (isContinueDownload && file.exists()) {  //开启断点下载 且 文件存在时
         val randomAccessFile = RandomAccessFile(file, "rw")
         lastIndex = if (randomAccessFile.length() > 1) {
-            randomAccessFile.length() -1//避免文件已完全下载时 导致的服务端416错误
+            randomAccessFile.length() - 1//避免文件已完全下载时 导致的服务端416错误
         } else {
             0
         }
@@ -202,4 +207,60 @@ fun HttpClient.download(
             }
         }
     )
+}
+
+/**
+ *  获取下载的文件大小  类型:long 单位:byte
+ */
+fun HttpClient.downloadFileSize(block: KtHttpRequest.() -> Unit): HttpCall<Long> {
+    return DownloadFileSizeCall(call = responseCall(block))
+}
+
+/**
+ * 请求失败后重新请求
+ */
+suspend inline fun <reified T> HttpClient.retryOnFailure(
+    count: Int = 3,
+    time: Long = 1000,
+    call: HttpClient.() -> HttpCall<T>
+): T? {
+    if (count <= 0 || time <= 0) {
+        throw Exception("count <= 0 or time <= 0")
+    }
+    var num = 0
+    while (num < count - 1) {
+        try {
+            return call(this@retryOnFailure).await()
+        } catch (e: Throwable) {
+            throwCancellationException(e)
+        }
+        delay(time)
+        num++
+    }
+    return call(this@retryOnFailure).awaitOrNull()
+}
+
+/**
+ * 请求失败后重新请求
+ */
+suspend inline fun <reified T> httpCallRetryOnFailure(
+    count: Int = 3,
+    time: Long = 1000,
+    call: () -> HttpCall<T>
+): T? {
+    if (count <= 0 || time <= 0) {
+        throw Exception("count <= 0 or time <= 0")
+    }
+    var num = 0
+    while (num < count - 1) {
+        try {
+            return call().await()
+        } catch (e: Throwable) {
+            throwCancellationException(e)
+        }
+        delay(time)
+        num++
+    }
+    return call().awaitOrNull()
+
 }

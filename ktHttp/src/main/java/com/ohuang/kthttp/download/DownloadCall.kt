@@ -44,7 +44,9 @@ open class DownloadCall(
         val totalSize = responseBody.contentLength() // 文件总大小
         // 断点续传时，实际需要下载的字节数
         val bytesToDownload = getTotalSize(response, totalSize)
-
+        if (file.parentFile?.exists()==false){
+            file.parentFile?.mkdirs()
+        }
         // 3. 准备文件和输出流 (使用 RandomAccessFile 支持断点续传)
         var randomAccessFile: RandomAccessFile? = null
         var fileChannel: FileChannel? = null

@@ -22,6 +22,8 @@ import com.ohuang.kthttp.config.onResponse
 import com.ohuang.kthttp.config.onStringBody
 import com.ohuang.kthttp.download
 import com.ohuang.kthttp.download.DownloadCall
+import com.ohuang.kthttp.download.DownloadFileSizeCall
+import com.ohuang.kthttp.downloadFileSize
 import com.ohuang.kthttp.httpCallNotCheck
 import com.ohuang.kthttp.jsonCall
 import com.ohuang.kthttp.okhttpBuilder
@@ -194,8 +196,14 @@ object testApi {
 
         }
     }
+    fun checkFileSize(url: String): HttpCall<Long>{
+        return mHttpClient.downloadFileSize {
+            urlParams(url) {
+            }
+        }
+    }
 
-    fun download(file: File,url: String, onProcess: (current: Long, total: Long) -> Unit): DownloadCall {
+    fun download(file: File,url: String, onProcess: (current: Long, total: Long) -> Unit): HttpCall<File> {
         return mHttpClient.download(file, isContinueDownload = true, onProcess = onProcess) {
             urlParams(url) {
             }

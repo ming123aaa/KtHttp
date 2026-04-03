@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import com.ohuang.kotlinhttp.R
 import com.ohuang.kthttp.call.HttpCall
 import com.ohuang.kthttp.call.asFlow
+import com.ohuang.kthttp.call.await
 import com.ohuang.kthttp.call.getResult
 import com.ohuang.kthttp.call.getResultOrNull
 import com.ohuang.kthttp.download.DownloadCall
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import java.io.File
+import java.util.Formatter
 
 
 class ViewActivity : AppCompatActivity() {
@@ -33,7 +35,15 @@ class ViewActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.tv_button)
     }
     var stateFlow: MutableStateFlow<String> = MutableStateFlow("没数据")
-    var download: HttpCall<*>? = null
+
+    val Long.fileSize: String
+        get() = when {
+            this < 1024 -> "$this B"
+            this < 1024 * 1024 -> String.format("%.2f KB", this / 1024.0)
+            this < 1024 * 1024 * 1024 -> String.format("%.2f MB", this / (1024.0 * 1024))
+            this < 1024L * 1024 * 1024 * 1024 -> String.format("%.2f GB", this / (1024.0 * 1024 * 1024))
+            else -> String.format("%.2f TB", this / (1024.0 * 1024 * 1024 * 1024))
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,29 +56,8 @@ class ViewActivity : AppCompatActivity() {
         }
         tv_button.setOnClickListener {
             lifecycleScope.launch {
-                if (download == null) {
-                    tv_button.text = "停止"
-                    download =
-                        testApi.uploadFiles(
-                            file = listOf(
-                                File(cacheDir.absolutePath + "/my1.apk"),
-                                File(cacheDir.absolutePath + "/my2.apk"),
-                                File(cacheDir.absolutePath + "/my3.apk")
-                            )
-                        ) { current, total,index ->
-                            stateFlow.value = "下载进度${index}：${current * 100 / total}%"
-                        }
-                    var resultOrNull = download?.getResultOrNull()
-                    if (resultOrNull != null) {
-                        stateFlow.value = "下载完成"
-                        tv_button.text = "开始"
-                        download = null
-                    }
-                } else {
-                    tv_button.text = "开始"
-                    download?.cancel()
-                    download = null
-                }
+                val filesize=testApi.checkFileSize("http://192.168.2.138:8080/main/files/testAssets/config.json").await()
+                stateFlow.emit(filesize.fileSize)
             }
 
         }
