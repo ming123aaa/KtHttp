@@ -4,6 +4,9 @@ import okhttp3.Call
 
 
 interface HttpCall<T> {
+
+
+
     fun request(error: (Throwable) -> Unit = {}, callback: (T) -> Unit)
 
     fun getOkhttpCall(): Call

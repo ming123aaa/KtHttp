@@ -21,7 +21,7 @@ fun KtHttpConfig.onResponse(isOverride: Boolean = false,block: (Response)-> Unit
         }
     }
     if (!isOverride){
-        var configForType = getConfigForType<ResponseShow>(key_onResponse)
+        val configForType = getConfigForType<ResponseShow>(key_onResponse)
         if (configForType!=null){
             responseShow = object : ResponseShow {
                 override fun onResponse(response: Response) {

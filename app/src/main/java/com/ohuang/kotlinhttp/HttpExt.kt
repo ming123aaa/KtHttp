@@ -5,16 +5,12 @@ import android.os.Looper
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
-import com.ohuang.kthttp.call.EmptyBodyException
-import com.ohuang.kthttp.call.ErrorResponse
 import com.ohuang.kthttp.call.HttpCall
 import com.ohuang.kthttp.call.KtHttpCall
-import com.ohuang.kthttp.call.getResultSafe
+import com.ohuang.kthttp.call.awaitOrNull
 import com.ohuang.kthttp.call.waitResult
 import com.ohuang.kthttp.call.waitResultOrNull
 import kotlinx.coroutines.launch
-import okhttp3.Response
-import java.io.File
 
 private var mHandler = Handler(Looper.getMainLooper())
 
@@ -53,7 +49,7 @@ class MainHttpCall<T>(call: HttpCall<T>) : KtHttpCall<T, T>(call) {
         callback: (T) -> Unit
     ) {
         lifecycleOwner.lifecycleScope.launch {
-            val result = getResultSafe { error.invoke(it) }
+            val result = awaitOrNull { error.invoke(it) }
             if (result != null) {
                 callback.invoke(result)
             }

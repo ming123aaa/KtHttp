@@ -22,7 +22,7 @@ kotlin版本最好大于1.8.20
 
 ```kotlin
 dependencies {
-    implementation("com.github.ming123aaa:KtHttp:1.2.5")
+    implementation("com.github.ming123aaa:KtHttp:2.0.0")
 }
 ```
 
@@ -77,7 +77,7 @@ object TestApi {
     }
 
     fun test2(): HttpCall<HttpData<CityInfo>> {
-        // 使用 httpCall 可生成对象
+        // 使用 httpCall 可生成对象,可自行实现解析代码
         // 需要传入 Transform 将字符串转成对象
         return mHttpClient.httpCall<HttpData<CityInfo>>(jsonTransForm()) {
             url("http://192.168.2.67:8080/main/files/test.json")
@@ -89,7 +89,7 @@ object TestApi {
          * 使用 stringCall 返回可处理字符串数据的 Call
          */
         return mHttpClient.stringCall {
-            urlParams("http://192.168.2.67:8080/main/index") { // 给 URL 添加参数
+            url("http://192.168.2.67:8080/main/index") { // 给 URL 添加参数
                 addParam("path", "/base.apk.cache")
             }
         }
@@ -100,7 +100,7 @@ object TestApi {
          * 使用 responseCall 返回可处理 OkHttp 的 response 的 Call
          */
         return mHttpClient.responseCall {
-            urlParams("http://192.168.2.67:8080/main/index") { // 给 URL 添加参数
+            url("http://192.168.2.67:8080/main/index") { // 给 URL 添加参数
                 addParam("path", "/base.apk.cache")
             }
         }
@@ -111,7 +111,7 @@ object TestApi {
          * 使用 newCall 返回 OkHttp 的 Call
          */
         return mHttpClient.newCall {
-            urlParams("http://192.168.2.67:8080/main/index") { // 给 URL 添加参数
+            url("http://192.168.2.67:8080/main/index") { // 给 URL 添加参数
                 addParam("path", "/base.apk.cache")
             }
         }
@@ -134,7 +134,7 @@ object TestApi {
     fun download(file: File, onProcess: (current: Long, total: Long) -> Unit): DownloadCall {
         // 文件下载
         return mHttpClient.download(file, isContinueDownload = true, onProcess = onProcess) {
-            urlParams("http://192.168.2.93:8080/main/files/%E9%93%B8%E4%BB%99/4399.apk") {
+            url("http://192.168.2.93:8080/main/files/%E9%93%B8%E4%BB%99/4399.apk") {
             }
         }
     }
@@ -142,7 +142,7 @@ object TestApi {
     fun uploadFile(file: File, callBack: (current: Long, totalSize: Long) -> Unit): HttpCall<String> {
         return mHttpClient.stringCall {
             url("http://192.168.2.123:8080/main/fileUpload")
-            postMultipartBody { // 上传文件  postUploadFile or postMultipartBody
+            uploadFile { // 上传文件  postUploadFile or postMultipartBody
                 addFile(key = "fileName", file = file, callBack = callBack)
             }
         }

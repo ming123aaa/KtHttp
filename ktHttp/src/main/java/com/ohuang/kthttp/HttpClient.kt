@@ -12,6 +12,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 
+typealias KtHttp = HttpClient
+
 /**
  *
  * @param okHttpClient okhttp客户端

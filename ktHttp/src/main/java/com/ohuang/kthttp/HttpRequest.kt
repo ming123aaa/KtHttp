@@ -24,7 +24,7 @@ open class HttpRequest(internal var builder: Request.Builder) {
 
     /**
      * 请求的url
-     * 想要加参数可以用 urlParams()
+     * 想要加参数可以用 url()
      * @param url
      */
     fun url(url: String) {
@@ -32,8 +32,12 @@ open class HttpRequest(internal var builder: Request.Builder) {
     }
 
 
-    fun addHeader(key: String, value: String) {
-        builder.addHeader(key, value)
+    fun addHeader(name: String, value: String) {
+        builder.addHeader(name, value)
+    }
+
+    fun removeHeader(name: String) {
+        builder.removeHeader(name)
     }
 
     private var requestBuildHook: ((Request) -> Request)? = null

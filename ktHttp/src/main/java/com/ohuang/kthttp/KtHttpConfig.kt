@@ -10,7 +10,7 @@ interface KtHttpConfig {
 }
 
 inline fun <reified T> KtHttpConfig.getConfigForType(name: String): T? {
-    var config = getConfig(name)
+    val config = getConfig(name)
     if (config is T){
         return config
     }

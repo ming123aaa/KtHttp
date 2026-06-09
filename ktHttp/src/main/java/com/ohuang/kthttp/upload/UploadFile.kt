@@ -12,9 +12,9 @@ import java.io.File
 /**
  *  使用MultipartBody
  */
-fun HttpRequest.postMultipartBody(bodybuilder: MultipartBody.Builder.() -> Unit) {
-    var requestBodyBuild = MultipartBody.Builder()
-        .setType(MultipartBody.FORM)
+fun HttpRequest.postMultipartBody(type: MediaType=MultipartBody.FORM,bodybuilder: MultipartBody.Builder.() -> Unit) {
+    val requestBodyBuild = MultipartBody.Builder()
+        .setType(type)
     bodybuilder.invoke(requestBodyBuild)
     builder.post(requestBodyBuild.build())
 }
@@ -22,9 +22,17 @@ fun HttpRequest.postMultipartBody(bodybuilder: MultipartBody.Builder.() -> Unit)
 /**
  *  使用MultipartBody,配合[addFile]可进行文件上传
  */
-fun HttpRequest.postUploadFile(bodybuilder: MultipartBody.Builder.() -> Unit) {
-    postMultipartBody(bodybuilder)
+fun HttpRequest.postUploadFile(type: MediaType=MultipartBody.FORM,bodybuilder: MultipartBody.Builder.() -> Unit) {
+    uploadFile(type=type,bodybuilder=bodybuilder)
 }
+
+/**
+ *  使用MultipartBody,配合[addFile]可进行文件上传
+ */
+fun HttpRequest.uploadFile(type: MediaType=MultipartBody.FORM,bodybuilder: MultipartBody.Builder.() -> Unit) {
+    postMultipartBody(type = type,bodybuilder=bodybuilder)
+}
+
 
 /**
  * 上传文件

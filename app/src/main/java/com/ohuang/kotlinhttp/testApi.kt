@@ -1,10 +1,9 @@
 package com.ohuang.kotlinhttp
 
-import androidx.core.R
 import com.google.gson.Gson
 import com.ohuang.kotlinhttp.data.CityInfo
 import com.ohuang.kotlinhttp.data.HttpData
-import com.ohuang.kthttp.HttpClient
+import com.ohuang.kthttp.KtHttp
 import com.ohuang.kthttp.KtHttpRequest
 import com.ohuang.kthttp.call.ErrorResponseException
 import com.ohuang.kthttp.call.HttpCall
@@ -12,38 +11,31 @@ import com.ohuang.kthttp.call.HttpCall
 
 import com.ohuang.kthttp.call.map
 
-import com.ohuang.kthttp.call.toBodyCall
 import com.ohuang.kthttp.config.hookResponse
 import com.ohuang.kthttp.config.hookStringBody
-import com.ohuang.kthttp.config.hookStringResponse
 import com.ohuang.kthttp.config.onError
 import com.ohuang.kthttp.config.onRequest
 import com.ohuang.kthttp.config.onResponse
 import com.ohuang.kthttp.config.onStringBody
 import com.ohuang.kthttp.download
-import com.ohuang.kthttp.download.DownloadCall
-import com.ohuang.kthttp.download.DownloadFileSizeCall
+import com.ohuang.kthttp.download.FileInfo
+import com.ohuang.kthttp.downloadFileInfo
 import com.ohuang.kthttp.downloadFileSize
-import com.ohuang.kthttp.httpCallNotCheck
 import com.ohuang.kthttp.jsonCall
-import com.ohuang.kthttp.okhttpBuilder
 import com.ohuang.kthttp.post
-import com.ohuang.kthttp.stringCallCode200
-import com.ohuang.kthttp.stringCallNotCheck
-import com.ohuang.kthttp.transform.ResponseConvert
-import com.ohuang.kthttp.transform.StringTransForm
 import com.ohuang.kthttp.transform.Transform
 import com.ohuang.kthttp.transform.transForm
 import com.ohuang.kthttp.upload.addFile
 import com.ohuang.kthttp.upload.postMultipartBody
 import com.ohuang.kthttp.upload.postUploadFile
-import com.ohuang.kthttp.urlParams
+import com.ohuang.kthttp.upload.uploadFile
+import com.ohuang.kthttp.url
 import okhttp3.Call
 import okhttp3.Response
 import java.io.File
 
 object testApi {
-    var mHttpClient = HttpClient(globalKtConfigCall = {
+    var mHttpClient = KtHttp(globalKtConfigCall = {
         onStringBody {
             println("全局onStringBody:$it")
         }
@@ -101,10 +93,10 @@ object testApi {
         return request<CityInfo>() {
             url("http://192.168.2.100:8080/main/files/test.json")
 
-            urlParams(url) {
+            url(url) {
                 addParam("aaa", "1111")
             }
-            urlParams(url) {
+            url(url) {
                 addParam("aaa", "2222")
             }
             hookResponse { //可修改Response
@@ -150,10 +142,8 @@ object testApi {
          * 使用 stringCall 返回可处理 字符串数据的Call
          */
         return mHttpClient.stringCall {
-            urlParams("http://192.168.2.100:8080/main/index") { //给url添加参数
+            url("http://192.168.2.100:8080/main/index") { //给url添加参数
                 addParam("path", "/base.apk.cache")
-
-
             }
         }
     }
@@ -163,7 +153,7 @@ object testApi {
          * 使用 responseCall 返回可处理 okhttp的response的Call
          */
         return mHttpClient.responseCall {
-            urlParams("http://192.168.2.100:8080/main/index") { //给url添加参数
+            url("http://192.168.2.100:8080/main/index") { //给url添加参数
                 addParam("path", "/base.apk.cache")
             }
         }
@@ -174,7 +164,7 @@ object testApi {
          * 使用 newCall 返回okhttp的Call
          */
         return mHttpClient.newCall {
-            urlParams("http://192.168.2.100:8080/main/index") { //给url添加参数
+            url("http://192.168.2.100:8080/main/index") { //给url添加参数
                 addParam("path", "/base.apk.cache")
             }
         }
@@ -196,16 +186,16 @@ object testApi {
 
         }
     }
-    fun checkFileSize(url: String): HttpCall<Long>{
-        return mHttpClient.downloadFileSize {
-            urlParams(url) {
+    fun checkFile(url: String): HttpCall<FileInfo>{
+        return mHttpClient.downloadFileInfo{
+            url(url) {
             }
         }
     }
 
     fun download(file: File,url: String, onProcess: (current: Long, total: Long) -> Unit): HttpCall<File> {
         return mHttpClient.download(file, isContinueDownload = true, onProcess = onProcess) {
-            urlParams(url) {
+            url(url) {
             }
         }
     }
@@ -213,7 +203,7 @@ object testApi {
     fun uploadFile(file: File,callBack:(current: Long, totalSize: Long) -> Unit ): HttpCall<String> {
         return mHttpClient.stringCall {
             url("http://192.168.2.123:8080/main/fileUpload")
-            postMultipartBody {//上传文件  postUploadFile or postMultipartBody
+            uploadFile {//上传文件  postUploadFile or postMultipartBody
                 addFile(key = "fileName", file = file, callBack = callBack)
             }
         }
@@ -222,7 +212,7 @@ object testApi {
     fun uploadFiles(file: List<File>,callBack:(current: Long, totalSize: Long,index:Int) -> Unit ): HttpCall<String> {
         return mHttpClient.stringCall {
             url("http://192.168.2.123:8080/main/multifileUpload")
-            postUploadFile {//上传文件  postUploadFile or postMultipartBody
+            uploadFile {//上传文件  postUploadFile or postMultipartBody
                 file.forEachIndexed { index,f-> //上传多个文件
                     addFile(key = "fileName",file = f, callBack = { current,total->
                         callBack(current,total,index)

@@ -5,7 +5,12 @@ import okhttp3.Response
 import okhttp3.ResponseBody
 
 
-open class KtHttpException(msg: String) : RuntimeException(msg)
+open class KtHttpException(msg: String) : RuntimeException(msg) {
+
+    open fun close() {}
+
+}
+
 open class ErrorResponseException(msg: String, val errorResponse: ErrorResponse) :
     KtHttpException(msg) {
 
@@ -20,12 +25,13 @@ open class ErrorResponseException(msg: String, val errorResponse: ErrorResponse)
     fun errorBodyString(): String {
         return errorResponse.errorBodyString()
     }
+
+    override fun close() {
+        errorResponse.close()
+    }
+
 }
 
-class CodeNot200Exception(msg: String, errorResponse: ErrorResponse) : ErrorResponseException(
-    msg,
-    errorResponse
-)
 
 class EmptyBodyException(msg: String, errorResponse: ErrorResponse) : ErrorResponseException(
     msg,
@@ -72,12 +78,17 @@ class ErrorResponse(
             return errorBodyString!!
         }
         try {
-              errorBodyString = errorBody?.string() ?: ""
-        }catch(e: Throwable) {
+            errorBodyString = errorBody?.string() ?: ""
+            close()
+        } catch (e: Throwable) {
 
         }
         return errorBodyString ?: ""
-    
+
+    }
+
+    fun close() {
+        response.close()
     }
 
     override fun toString(): String {

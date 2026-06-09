@@ -24,3 +24,4 @@ dependencyResolutionManagement {
 rootProject.name = "KotlinHttp"
 include(":app")
 include(":ktHttp")
+

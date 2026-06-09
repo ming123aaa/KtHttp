@@ -31,7 +31,7 @@ fun KtHttpConfig.onError(
         }
     }
     if (!isOverride){
-        var configForType = getConfigForType<ResponseCallError>(key_Error)
+        val configForType = getConfigForType<ResponseCallError>(key_Error)
         if (configForType != null){
             responseCallError=object : ResponseCallError {
                 override fun onError(

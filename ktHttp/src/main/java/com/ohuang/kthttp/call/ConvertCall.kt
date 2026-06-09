@@ -21,104 +21,12 @@ fun HttpCall<Response>.toStringHttpCall(): HttpCall<String> {
     return toTransformCall(StringTransForm)
 }
 
-/**
- *  Response转化为String
- *  只处理httpCode==200
- */
-fun HttpCall<Response>.toStringHttpCallCode200(): HttpCall<String> {
-    return toTransformCallCode200(StringTransForm)
-}
-
-/**
- *  Response转化为String
- *  只处理httpCode==200
- */
-@Deprecated(
-    message = "请替换成toStringHttpCallCode200",
-    replaceWith = ReplaceWith("toStringHttpCallCode200()")
-)
-fun HttpCall<Response>.toStringHttpCallSafe(): HttpCall<String> {
-    return toStringHttpCallCode200()
-}
-
-/**
- *  Response转化为String
- *  不检查httpCode
- */
-fun HttpCall<Response>.toStringHttpCallNotCheck(): HttpCall<String> {
-    return toTransformCallNotCheck(StringTransForm)
-}
-
 
 /**
  * 转化为指定类型
  */
 fun <T> HttpCall<String>.toTransform(transform: Transform<T>): HttpCall<T> {
     return StringTransformCall(this, transform)
-}
-
-/**
- *  Response转化为指定类型
- *  只处理 httpCode==200
- */
-fun <T> HttpCall<Response>.toTransformCallCode200(
-    transform: Transform<T>
-): HttpCall<T> {
-    return ConvertCall(
-        call = this,
-        codeCheck = CodeCheck.Code_200,
-        convert = transform.toConvert(this)
-    )
-}
-
-
-/**
- *  Response转化为指定类型
- *  只处理 httpCode==200
- */
-fun <T> HttpCall<Response>.toConvertCallCode200(
-    convert: ResponseConvert<T>
-): HttpCall<T> {
-    return ConvertCall(call = this, codeCheck = CodeCheck.Code_200, convert = convert)
-}
-
-/**
- *  Response转化为指定类型
- *  只处理 httpCode==200
- */
-@Deprecated(
-    "请替换成toTransformCallCode200()",
-    replaceWith = ReplaceWith("toTransformCallCode200(transform)"),
-    level = DeprecationLevel.WARNING
-)
-fun <T> HttpCall<Response>.toSafeTransformCall(
-    transform: Transform<T>
-): HttpCall<T> {
-    return toTransformCallCode200(transform)
-}
-
-/**
- * Response转化为指定类型
- * 不检查httpCode
- */
-fun <T> HttpCall<Response>.toTransformCallNotCheck(
-    transform: Transform<T>
-): HttpCall<T> {
-    return ConvertCall(
-        call = this,
-        codeCheck = CodeCheck.Code_NotCheck,
-        convert = transform.toConvert(this)
-    )
-}
-
-/**
- * Response转化为指定类型
- * 不检查httpCode
- */
-fun <T> HttpCall<Response>.toConvertCallNotCheck(
-    convert: ResponseConvert<T>
-): HttpCall<T> {
-    return ConvertCall(call = this, codeCheck = CodeCheck.Code_NotCheck, convert = convert)
 }
 
 /**
@@ -130,7 +38,6 @@ fun <T> HttpCall<Response>.toTransformCall(
 ): HttpCall<T> {
     return ConvertCall(
         call = this,
-        codeCheck = CodeCheck.Code_Successful,
         convert = transform.toConvert(this)
     )
 }
@@ -142,7 +49,7 @@ fun <T> HttpCall<Response>.toTransformCall(
 fun <T> HttpCall<Response>.toConvertCall(
     convert: ResponseConvert<T>
 ): HttpCall<T> {
-    return ConvertCall(call = this, codeCheck = CodeCheck.Code_Successful, convert = convert)
+    return ConvertCall(call = this, convert = convert)
 }
 
 fun <T> Transform<T>.toConvert(httpCall: HttpCall<*>): ResponseConvert<T> {
@@ -185,15 +92,9 @@ internal class StringTransformCall<T>(call: HttpCall<String>, private val transf
     }
 }
 
-internal enum class CodeCheck {
-    Code_Successful,
-    Code_200,
-    Code_NotCheck
-}
 
 internal class ConvertCall<T>(
     call: HttpCall<Response>,
-    private var codeCheck: CodeCheck = CodeCheck.Code_Successful,
     private val convert: ResponseConvert<T>
 ) :
     KtHttpCall<T, Response>(call) {
@@ -207,16 +108,9 @@ internal class ConvertCall<T>(
     }
 
     private fun checkHttpCode(response: Response) {
-        if (codeCheck == CodeCheck.Code_NotCheck) {
-            return
-        }
-        val isThrow = if (codeCheck == CodeCheck.Code_Successful) {
-            !response.isSuccessful
-        } else if (codeCheck == CodeCheck.Code_200) {
-            response.code != 200
-        } else {
-            false
-        }
+
+        val isThrow = !response.isSuccessful
+
         if (isThrow) {
             var errorResponse = ErrorResponse(response = response, errorBody = null)
             try {
@@ -227,17 +121,11 @@ internal class ConvertCall<T>(
                     )
                 response.close()
             } finally {
-                if (codeCheck == CodeCheck.Code_200) {
-                    throw CodeNot200Exception(
-                        msg = "http code!=200  $response",
-                        errorResponse = errorResponse
-                    )
-                } else {
-                    throw ErrorResponseException(
-                        msg = "http code:${response.code}  $response",
-                        errorResponse = errorResponse
-                    )
-                }
+                throw ErrorResponseException(
+                    msg = "http code:${response.code}  $response",
+                    errorResponse = errorResponse
+                )
+
             }
         }
     }

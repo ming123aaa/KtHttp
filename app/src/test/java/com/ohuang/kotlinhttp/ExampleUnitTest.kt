@@ -1,20 +1,8 @@
 package com.ohuang.kotlinhttp
 
-import com.ohuang.kthttp.call.asFlow
 import com.ohuang.kthttp.call.await
-import com.ohuang.kthttp.call.getResult
-import com.ohuang.kthttp.call.getResultSafe
-import com.ohuang.kthttp.call.waitResult
-import com.ohuang.kthttp.call.waitResultOrNull
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
 import org.junit.Test
-
-import org.junit.Assert.*
 import java.io.File
 
 /**

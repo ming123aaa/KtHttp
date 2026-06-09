@@ -5,17 +5,16 @@ import com.ohuang.kthttp.call.HttpCall
 import com.ohuang.kthttp.call.HttpResponse
 import com.ohuang.kthttp.call.await
 import com.ohuang.kthttp.call.awaitOrNull
+import com.ohuang.kthttp.call.map
 import com.ohuang.kthttp.call.throwCancellationException
-import com.ohuang.kthttp.call.toConvertCallCode200
-import com.ohuang.kthttp.call.toConvertCallNotCheck
+
 import com.ohuang.kthttp.call.toHttpResponseCall
-import com.ohuang.kthttp.call.toStringHttpCallCode200
-import com.ohuang.kthttp.call.toStringHttpCallNotCheck
+
 import com.ohuang.kthttp.call.toStringHttpResponseCall
-import com.ohuang.kthttp.call.toTransformCallCode200
-import com.ohuang.kthttp.call.toTransformCallNotCheck
+
 import com.ohuang.kthttp.download.DownloadCall
-import com.ohuang.kthttp.download.DownloadFileSizeCall
+import com.ohuang.kthttp.download.DownloadFileInfoCall
+import com.ohuang.kthttp.download.FileInfo
 import com.ohuang.kthttp.transform.ResponseConvert
 import com.ohuang.kthttp.transform.Transform
 import com.ohuang.kthttp.transform.gsonTransForm
@@ -23,116 +22,14 @@ import kotlinx.coroutines.delay
 import java.io.File
 import java.io.RandomAccessFile
 
-/**
- * 网络请求，获取字符串内容
- * 不检查httpCode
- * @param block 请求参数
- */
-fun HttpClient.stringCallNotCheck(block: KtHttpRequest.() -> Unit): HttpCall<String> {
-    return responseCall(block).toStringHttpCallNotCheck()
-}
+
 
 /**
- * 网络请求，获取字符串内容
- * code==200 才会正确返回结果
- * @param block 请求参数
- */
-@Deprecated(
-    message = "请替换成stringCallCode200()",
-    replaceWith = ReplaceWith(expression = "stringCallCode200(block)"),
-    level = DeprecationLevel.WARNING
-)
-fun HttpClient.stringCallSafe(block: KtHttpRequest.() -> Unit): HttpCall<String> {
-    return stringCallCode200(block)
-}
-
-/**
- * 网络请求，获取字符串内容
- * 只处理httpCode==200
- * @param block 请求参数
- */
-fun HttpClient.stringCallCode200(block: KtHttpRequest.() -> Unit): HttpCall<String> {
-    return responseCall(block).toStringHttpCallCode200()
-}
-
-/**
- * 请求json数据
- * httpCode=[0,299]
+ * json数据，使用Gson进行解析, gsonTransFormSetGson()可设置自定义的gson
  */
 inline fun <reified T> HttpClient.jsonCall(noinline block: KtHttpRequest.() -> Unit): HttpCall<T> {
     return httpCall(transform = gsonTransForm(), block = block)
 }
-
-/**
- * 请求json数据
- * 不检查httpCode
- */
-inline fun <reified T> HttpClient.jsonCallNotCheck(noinline block: KtHttpRequest.() -> Unit): HttpCall<T> {
-    return httpCallNotCheck(transform = gsonTransForm(), block = block)
-}
-
-/**
- * 请求json数据
- * httpCode==200
- */
-inline fun <reified T> HttpClient.jsonCallCode200(noinline block: KtHttpRequest.() -> Unit): HttpCall<T> {
-    return httpCallCode200(transform = gsonTransForm(), block = block)
-}
-
-
-/**
- * 网络请求，获取对象内容
- * 只处理httpCode==200
- * @param transform 类型转换器
- * @param block 请求参数
- */
-fun <T> HttpClient.httpCallCode200(
-    transform: Transform<T>,
-    block: KtHttpRequest.() -> Unit
-): HttpCall<T> {
-    return responseCall(block).toTransformCallCode200(transform)
-}
-
-
-/**
- * 网络请求，获取对象内容
- * 只处理httpCode==200
- * @param convert 类型转换器
- * @param block 请求参数
- */
-fun <T> HttpClient.httpCallCode200(
-    convert: ResponseConvert<T>,
-    block: KtHttpRequest.() -> Unit
-): HttpCall<T> {
-    return responseCall(block).toConvertCallCode200(convert)
-}
-
-/**
- * 网络请求，获取对象内容
- * 不检查httpCode
- * @param transform 类型转换器
- * @param block 请求参数
- */
-fun <T> HttpClient.httpCallNotCheck(
-    transform: Transform<T>,
-    block: KtHttpRequest.() -> Unit
-): HttpCall<T> {
-    return responseCall(block).toTransformCallNotCheck(transform)
-}
-
-/**
- * 网络请求，获取对象内容
- * 不检查httpCode
- * @param convert 类型转换器
- * @param block 请求参数
- */
-fun <T> HttpClient.httpCallNotCheck(
-    convert: ResponseConvert<T>,
-    block: KtHttpRequest.() -> Unit
-): HttpCall<T> {
-    return responseCall(block).toConvertCallNotCheck(convert)
-}
-
 
 /**
  *  返回HttpResponse<T> 类型
@@ -165,7 +62,7 @@ fun HttpClient.stringHttpResponseCall(
 }
 
 /**
- * 请求json数据 返回HttpResponse<T> 类型
+ * 请求json数据 返回HttpResponse<T> 类型  ,使用Gson进行解析, gsonTransFormSetGson()可设置自定义的gson
  */
 inline fun <reified T> HttpClient.jsonHttpResponseCall(
     noinline block: KtHttpRequest.() -> Unit
@@ -213,7 +110,17 @@ fun HttpClient.download(
  *  获取下载的文件大小  类型:long 单位:byte
  */
 fun HttpClient.downloadFileSize(block: KtHttpRequest.() -> Unit): HttpCall<Long> {
-    return DownloadFileSizeCall(call = responseCall(block))
+    return DownloadFileInfoCall(call = responseCall(block)).map { it.contentLength }
+}
+
+
+
+
+/**
+ *  获取下载的文件大小  类型:long 单位:byte
+ */
+fun HttpClient.downloadFileInfo(block: KtHttpRequest.() -> Unit): HttpCall<FileInfo> {
+    return DownloadFileInfoCall(call = responseCall(block))
 }
 
 /**

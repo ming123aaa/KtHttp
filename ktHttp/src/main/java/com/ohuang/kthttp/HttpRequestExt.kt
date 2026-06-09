@@ -11,34 +11,26 @@ import java.util.TreeMap
 /**
  * 设置url,可新增url参数
  *
- * 若需要查看或删除url中存在的参数请使用[urlParamsEdit]方法
+
  */
-fun HttpRequest.urlParams(url: String, params: Map<String, String>) {
-    url(UrlAddParams.urlAddParams(url, params))
+fun HttpRequest.url(url: String, params: Map<String, String>) {
+    val urlParams = UrlAddParams.getUrlParams(url)
+    urlParams.putAll(params)
+    url(UrlAddParams.urlAddParams(url, urlParams))
 }
 
 /**
  * 设置url,可新增url参数
  *
- * 若需要查看或删除url中存在的参数请使用[urlParamsEdit]方法
  */
-fun HttpRequest.urlParams(url: String, block: RequestParams.() -> Unit = {}) {
-    val requestParams = RequestParams()
-    block.invoke(requestParams)
-    urlParams(url, requestParams.map)
-}
-
-/**
- * 设置url,可编辑url的参数
- *
- * 与[urlParams]相比,[urlParamsEdit]方法可以查看和删除在url已存在的参数
- */
-fun HttpRequest.urlParamsEdit(url: String, block: RequestParams.() -> Unit = {}){
-    var urlParams = UrlAddParams.getUrlParams(url)
+fun HttpRequest.url(url: String, block: RequestParams.() -> Unit = {}) {
+    val urlParams = UrlAddParams.getUrlParams(url)
     val requestParams = RequestParams(urlParams)
     block.invoke(requestParams)
-    url(UrlAddParams.urlReplaceParams(url, requestParams.map))
+    url(url, requestParams.map)
 }
+
+
 
 /**
  * okhttp 请求的builder

@@ -3,12 +3,15 @@ package com.ohuang.kthttp.call
 
 import com.ohuang.kthttp.KtHttpConfig
 import com.ohuang.kthttp.KtHttpConfigImpl
+import com.ohuang.kthttp.download.DownloadCall
 import com.ohuang.kthttp.wait.ThreadWait
 import com.ohuang.kthttp.wait.WaitResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.Call
 import okhttp3.Response
+import java.io.File
+import java.io.RandomAccessFile
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -29,18 +32,39 @@ fun <T, B> HttpCall<T>.map(
     return MapHttpCall(this, transform)
 }
 
+
 /**
  * 协程获取结果
  * @param isCancel 协程取消后是否 取消网络请求
  */
-suspend fun <T> HttpCall<T>.getResult(isCancel: Boolean = true): T {
+suspend fun <T> HttpCall<T>.awaitOrNull(
+    isCancel: Boolean = true,
+    block: (Throwable) -> Unit = {}
+): T? {
+    try {
+        return await(isCancel = isCancel)
+    } catch (e: Throwable) {
+        block(e)
+        throwCancellationException(e)
+
+    }
+    return null
+}
+
+/**
+ * 协程获取结果
+ * @param isCancel 协程取消后是否 取消网络请求
+ */
+suspend fun <T> HttpCall<T>.await(
+    isCancel: Boolean = true
+): T {
     return suspendCancellableCoroutine { continuation ->
         if (isCancel) {
             continuation.invokeOnCancellation {
-                this@getResult.cancel()
+                this@await.cancel()
             }
         }
-        this@getResult.request(error = {
+        this@await.request(error = {
             if (continuation.isActive) {
                 continuation.resumeWithException(it)
             }
@@ -51,58 +75,6 @@ suspend fun <T> HttpCall<T>.getResult(isCancel: Boolean = true): T {
             }
         })
     }
-}
-
-/**
- * 协程获取结果
- *  * @param isCancel 协程取消后是否 取消网络请求
- * 出现异常时回调且返回null
- */
-suspend fun <T> HttpCall<T>.getResultSafe(
-    isCancel: Boolean = true,
-    block: (Throwable) -> Unit = {}
-): T? {
-    return getResultOrNull(isCancel = isCancel, block = block)
-}
-
-/**
- * 协程获取结果
- *  * @param isCancel 协程取消后是否 取消网络请求
- * 出现异常时回调且返回null
- */
-suspend fun <T> HttpCall<T>.getResultOrNull(
-    isCancel: Boolean = true,
-    block: (Throwable) -> Unit = {}
-): T? {
-    try {
-        return getResult(isCancel = isCancel)
-    } catch (e: Throwable) {
-        throwCancellationException(e)
-        block(e)
-
-    }
-    return null
-}
-
-/**
- * 协程获取结果
- * @param isCancel 协程取消后是否 取消网络请求
- */
-suspend fun <T> HttpCall<T>.awaitOrNull(
-    isCancel: Boolean = true,
-    block: (Throwable) -> Unit = {}
-): T? {
-    return getResultOrNull(isCancel = isCancel, block = block)
-}
-
-/**
- * 协程获取结果
- * @param isCancel 协程取消后是否 取消网络请求
- */
-suspend fun <T> HttpCall<T>.await(
-    isCancel: Boolean = true
-): T {
-    return getResult(isCancel = isCancel)
 }
 
 /**
@@ -130,7 +102,7 @@ fun Call.toHttpCall(block: KtHttpConfig.() -> Unit = {}): HttpCall<Response> {
 
 
 /**
- * 会堵塞当前线程，更推荐使用getResult()
+ * 会堵塞当前线程
  * 等待请求结果, 如果超时则抛出异常
  * @param timeOut 超时时间，单位毫秒，0表示无限制
  */
@@ -153,7 +125,7 @@ fun <T> HttpCall<T>.waitResult(timeOut: Long = 0): T {
 }
 
 /**
- * 会堵塞当前线程，更推荐使用getResultOrNull()
+ * 会堵塞当前线程
  * 等待请求结果, 如果超时则抛出异常
  * @param timeOut 超时时间，单位毫秒，0表示无限制
  *
@@ -167,6 +139,29 @@ fun <T> HttpCall<T>.waitResultOrNull(timeOut: Long = 0, block: (Throwable) -> Un
     }
 
 }
+
+fun HttpCall<Response>.download(
+    file: File,
+    isContinueDownload: Boolean = false,
+    onProcess: (current: Long, total: Long) -> Unit = { _, _ -> },
+): HttpCall<File> {
+    var lastIndex = 0L
+    if (isContinueDownload && file.exists()) {  //开启断点下载 且 文件存在时
+        val randomAccessFile = RandomAccessFile(file, "rw")
+        lastIndex = if (randomAccessFile.length() > 1) {
+            randomAccessFile.length() - 1//避免文件已完全下载时 导致的服务端416错误
+        } else {
+            0
+        }
+    }
+    return DownloadCall(
+        file = file,
+        rangeStart = lastIndex,
+        onProcess = onProcess,
+        call = this
+    )
+}
+
 
 /**
  * 抛出 协程取消异常

@@ -2,27 +2,18 @@ package com.ohuang.kotlinhttp
 
 import android.os.Bundle
 import android.view.MotionEvent
-import android.view.View
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
-import com.ohuang.kotlinhttp.R
-import com.ohuang.kthttp.call.HttpCall
 import com.ohuang.kthttp.call.asFlow
 import com.ohuang.kthttp.call.await
 import com.ohuang.kthttp.call.awaitOrNull
-import com.ohuang.kthttp.call.getResult
-import com.ohuang.kthttp.call.getResultOrNull
-import com.ohuang.kthttp.download.DownloadCall
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
-import java.io.File
-import java.util.Formatter
 
 
 class ViewActivity : AppCompatActivity() {
@@ -42,7 +33,11 @@ class ViewActivity : AppCompatActivity() {
             this < 1024 -> "$this B"
             this < 1024 * 1024 -> String.format("%.2f KB", this / 1024.0)
             this < 1024 * 1024 * 1024 -> String.format("%.2f MB", this / (1024.0 * 1024))
-            this < 1024L * 1024 * 1024 * 1024 -> String.format("%.2f GB", this / (1024.0 * 1024 * 1024))
+            this < 1024L * 1024 * 1024 * 1024 -> String.format(
+                "%.2f GB",
+                this / (1024.0 * 1024 * 1024)
+            )
+
             else -> String.format("%.2f TB", this / (1024.0 * 1024 * 1024 * 1024))
         }
 
@@ -57,8 +52,14 @@ class ViewActivity : AppCompatActivity() {
         }
         tv_button.setOnClickListener {
             lifecycleScope.launch {
-                val filesize=testApi.checkFileSize("http://192.168.2.138:8080/main/files/testAssets/config.json").await()
-                stateFlow.emit(filesize.fileSize)
+                val file = testApi.checkFile("http://192.168.2.164:8080/main/files/te%20st.txt").awaitOrNull()
+                if (file != null) {
+                    val str =
+                        "fileName=${file.fileName}  type=${file.contentType}  size=${file.contentLength.fileSize}"
+                    stateFlow.emit(str)
+                } else {
+                    stateFlow.emit("错误")
+                }
             }
 
         }
