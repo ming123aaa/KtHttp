@@ -1,8 +1,11 @@
 package com.ohuang.kotlinhttp
 
+import android.content.Context
+import android.net.Uri
 import com.google.gson.Gson
 import com.ohuang.kotlinhttp.data.CityInfo
 import com.ohuang.kotlinhttp.data.HttpData
+import com.ohuang.kotlinhttp.utli.UriToFile
 import com.ohuang.kthttp.KtHttp
 import com.ohuang.kthttp.KtHttpRequest
 import com.ohuang.kthttp.call.ErrorResponseException
@@ -26,6 +29,7 @@ import com.ohuang.kthttp.post
 import com.ohuang.kthttp.transform.Transform
 import com.ohuang.kthttp.transform.transForm
 import com.ohuang.kthttp.upload.addFile
+import com.ohuang.kthttp.upload.addFileInputSteam
 import com.ohuang.kthttp.upload.postMultipartBody
 import com.ohuang.kthttp.upload.postUploadFile
 import com.ohuang.kthttp.upload.uploadFile
@@ -205,6 +209,16 @@ object testApi {
             url("http://192.168.2.123:8080/main/fileUpload")
             uploadFile {//上传文件  postUploadFile or postMultipartBody
                 addFile(key = "fileName", file = file, callBack = callBack)
+            }
+        }
+    }
+
+    fun uploadFile(context: Context, uri: Uri, callBack:(current: Long, totalSize: Long) -> Unit ): HttpCall<String> {
+        return mHttpClient.stringCall {
+            url("http://192.168.2.123:8080/main/fileUpload")
+            uploadFile {//上传文件  postUploadFile or postMultipartBody
+                addFileInputSteam(key = "fileName", file = UriToFile.uriToFileInputStream(uri,context)!!
+                    , fileName = UriToFile.getFileName(uri,context)!!, callBack = callBack)
             }
         }
     }
