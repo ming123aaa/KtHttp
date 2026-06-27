@@ -7,6 +7,7 @@ import okhttp3.MultipartBody
 
 
 import java.io.File
+import java.io.FileInputStream
 
 
 /**
@@ -48,6 +49,28 @@ fun MultipartBody.Builder.addFile(
         key,
         fileName,
         ProgressRequestBody(
+            contentType = mediaType,
+            file = file,
+            callBack = callBack
+        )
+    )
+}
+
+
+/**
+ * 上传文件
+ */
+fun MultipartBody.Builder.addFileInputSteam(
+    key: String,
+    file: FileInputStream,
+    fileName: String ,
+    mediaType: MediaType? = "application/octet-stream".toMediaTypeOrNull(),
+    callBack: (current: Long, totalSize: Long) -> Unit = { _, _ -> }
+) {
+    addFormDataPart(
+        key,
+        fileName,
+        FileInputStreamRequestBody(
             contentType = mediaType,
             file = file,
             callBack = callBack

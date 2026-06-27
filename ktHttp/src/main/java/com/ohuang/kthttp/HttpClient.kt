@@ -1,6 +1,7 @@
 package com.ohuang.kthttp
 
 import com.ohuang.kthttp.call.HttpCall
+import com.ohuang.kthttp.call.ResponseBuilderCall
 import com.ohuang.kthttp.call.ResponseCall
 import com.ohuang.kthttp.call.toConvertCall
 import com.ohuang.kthttp.call.toStringHttpCall
@@ -17,13 +18,15 @@ typealias KtHttp = HttpClient
 /**
  *
  * @param okHttpClient okhttp客户端
- * @param globalKtConfigCall 全局配置，会被请求配置和强制配置给覆盖
- * @param forceKtConfigCall 强制配置, 会覆盖全局配置和请求配置
+ * @param globalKtConfigCall 全局配置，用于添加默认请求参数,不会覆盖参数。
+ * @param forceKtConfigCall 强制配置, 用于添加或覆盖请求参数。
+ * @param deferRequestBuild 是否延迟构建请求。true表示在实际执行请求时才构建Request对象（延迟执行，节省资源）；false表示调用时立即构建Request对象。默认为true
  */
 class HttpClient(
     var okHttpClient: OkHttpClient = OkHttpClient(),
     private var globalKtConfigCall: KtHttpRequest.() -> Unit = {},
-    private var forceKtConfigCall: KtHttpRequest.() -> Unit = {}
+    private var forceKtConfigCall: KtHttpRequest.() -> Unit = {},
+    private var deferRequestBuild: Boolean = true
 ) {
 
     /**
@@ -55,6 +58,15 @@ class HttpClient(
      * 网络请求，获取响应内容
      **/
     fun responseCall(block: KtHttpRequest.() -> Unit): HttpCall<Response> {
+        if (deferRequestBuild) {
+            return ResponseBuilderCall({
+                val httpRequest = createHttpRequest(block)
+                return@ResponseBuilderCall ResponseCall(
+                    createCall(httpRequest),
+                    httpRequest.configs
+                )
+            })
+        }
         val httpRequest = createHttpRequest(block)
         return ResponseCall(createCall(httpRequest), httpRequest.configs)
     }

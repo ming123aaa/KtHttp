@@ -62,6 +62,8 @@ class ViewActivity : AppCompatActivity() {
                 }
             }
 
+
+
         }
 
         lifecycleScope.launch {

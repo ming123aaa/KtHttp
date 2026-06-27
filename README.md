@@ -22,7 +22,7 @@ kotlin版本最好大于1.8.20
 
 ```kotlin
 dependencies {
-    implementation("com.github.ming123aaa:KtHttp:2.0.0")
+    implementation("com.github.ming123aaa:KtHttp:2.0.1")
 }
 ```
 
