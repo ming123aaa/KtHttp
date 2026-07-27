@@ -26,6 +26,72 @@ dependencies {
 }
 ```
 
+## 简单示例
+```kotlin
+val mHttpClient = KtHttp() //创建KtHttp
+
+//请求接口定义
+fun demo(): HttpCall<CityInfo> {
+    return mHttpClient.jsonCall<CityInfo> { //jsonCall() 请求json数据
+        addHeaders { //请求头
+            addParam("aaa", "bbbb")
+        }
+        url("http://192.168.2.100:8080/main/files/test.json") { //请求url的地址,可通过addParam添加url的参数
+            addParam("aaa", "1111")
+        }
+        post { // post请求
+            addParam("aa", "bbb") //请求参数
+        }
+        requestBuilderBlock { //可直接调用okhttp request.Builder 的方法
+
+        }
+    }
+}
+
+/**请求使用,支持以下多种方式 **/
+
+//--回调--
+demo().request(error = {}, callback = {})
+
+//--协程--
+try {
+    val cityInfo = demo().await()
+    // 成功处理
+} catch (e: Exception) {
+    // 异常处理
+}
+//--flow--
+demo().asFlow().catch {
+    // 异常处理
+}.collect {
+    // 成功处理
+}
+
+```
+
+### java中使用
+如果想通过java调用的话,请将
+[HttpClientExt.kt](ktHttp/src/main/java/com/ohuang/kthttp/HttpClientExt.kt)
+复制到项目中。通过MainHttpCall来调用。
+```kotlin
+// 创建MainHttpCall
+fun demoMain(): MainHttpCall<CityInfo>{  //在kotlin中可调用 toMainHttpCall 即可完成
+        return demo().toMainHttpCall()
+}
+
+```
+```java 
+MainHttpCall<CityInfo> call=MainHttpCall.Companion.create(demo());//在Java环境中创建
+
+//请求
+call.request()
+    .onSuccess(result -> {})
+        .onError(error->{});
+
+  
+
+```
+
 ## 基本用法
 
 ### 1. HttpClient 和 Transform 以及基本的请求
@@ -279,7 +345,7 @@ fun test(): HttpCall<String> {
 fun testCoroutine() {
     lifecycleScope.launch {
         try {
-            val cityInfo = testApi.test().getResult()
+            val cityInfo = testApi.test().await()
         } catch (e: Exception) {
             if (e is ErrorResponseException) {
                 var errorResponse = e.errorResponse // 可以获取错误响应

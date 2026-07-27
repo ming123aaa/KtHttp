@@ -8,6 +8,7 @@ import com.ohuang.kotlinhttp.data.HttpData
 import com.ohuang.kotlinhttp.utli.UriToFile
 import com.ohuang.kthttp.KtHttp
 import com.ohuang.kthttp.KtHttpRequest
+import com.ohuang.kthttp.addHeaders
 import com.ohuang.kthttp.call.ErrorResponseException
 import com.ohuang.kthttp.call.HttpCall
 
@@ -56,6 +57,22 @@ object testApi {
             println("强制onError:e=$e   url=${call.request().url}")
         }
     })
+
+    fun demo(): MainHttpCall<CityInfo>{
+        return mHttpClient.jsonCall<CityInfo> { //jsonCall() 请求json数据
+            addHeaders{ //请求头
+                addParam("aaa","bbbb")
+            }
+            url("http://192.168.2.100:8080/main/files/test.json"){ //请求url的地址,可通过addParam添加url的参数
+                addParam("aaa", "1111")
+            }
+            post { // post请求
+                addParam("aa","bbb") //请求参数
+            }
+        }.toMainHttpCall()
+    }
+
+
     var gson = Gson()
 
     /**
@@ -63,6 +80,7 @@ object testApi {
      * 这里需要利用kotlin inline保留泛型类型
      */
     inline fun <reified T> jsonTransForm(): Transform<T> {
+
         return gson.transForm()
     }
 
