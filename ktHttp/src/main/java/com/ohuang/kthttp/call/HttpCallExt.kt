@@ -121,7 +121,7 @@ fun <T> HttpCall<T>.waitResult(timeOut: Long = 0): T {
             throw waitResult.throwable
         }
     }
-    throw Exception("waitResult error")
+    throw KtHttpException("waitResult timeout or error")
 }
 
 /**
@@ -147,11 +147,12 @@ fun HttpCall<Response>.download(
 ): HttpCall<File> {
     var lastIndex = 0L
     if (isContinueDownload && file.exists()) {  //开启断点下载 且 文件存在时
-        val randomAccessFile = RandomAccessFile(file, "rw")
-        lastIndex = if (randomAccessFile.length() > 1) {
-            randomAccessFile.length() - 1//避免文件已完全下载时 导致的服务端416错误
-        } else {
-            0
+        RandomAccessFile(file, "rw").use { randomAccessFile ->
+            lastIndex = if (randomAccessFile.length() > 1) {
+                randomAccessFile.length() - 1//避免文件已完全下载时 导致的服务端416错误
+            } else {
+                0
+            }
         }
     }
     return DownloadCall(

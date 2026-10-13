@@ -61,7 +61,10 @@ internal class HttpResponseCall<T>(
         callback: (HttpResponse<T>) -> Unit
     ) {
         call.request(error = error, callback = { mResponse ->
-            val rawBody: ResponseBody = mResponse.body!!
+            val rawBody: ResponseBody = mResponse.body ?: throw EmptyBodyException(
+                msg = "Response body is null",
+                errorResponse = ErrorResponse(response = mResponse, errorBody = null)
+            )
             // Remove the body's source (the only stateful object) so we can pass the response along.
             var rawResponse =
                 mResponse

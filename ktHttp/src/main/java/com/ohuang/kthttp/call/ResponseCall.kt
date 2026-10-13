@@ -19,9 +19,9 @@ class ResponseCall(private var call: Call, private val configs: MutableMap<Strin
             }
 
             override fun onResponse(call: Call, response: okhttp3.Response) {
-                var hookResponse = response
+                var hookResponse: okhttp3.Response = response
                 try {
-                    var hookResponse = hookResponse(response)
+                    hookResponse = hookResponse(response)
                     callResponse(hookResponse)
                     callback(hookResponse)
                 } catch (e: Throwable) {
@@ -57,22 +57,21 @@ class ResponseCall(private var call: Call, private val configs: MutableMap<Strin
 class ResponseBuilderCall(private var builder: () -> ResponseCall) :
     HttpCall<Response> {
     private var responseCall: ResponseCall? = null
-    private var isCreated: Boolean = false
+    @Volatile private var isCreated: Boolean = false
     private var mThrowable: Throwable? = null
 
     override fun request(error: (Throwable) -> Unit, callback: (Response) -> Unit) {
         checkResponseCall()
-        if (responseCall==null){
-            error(mThrowable?: KtHttpException("ResponseCall build error"))
-        }else{
-            responseCall!!.request(error,callback)
+        val call = responseCall
+        if (call == null) {
+            error(mThrowable ?: KtHttpException("ResponseCall build error"))
+        } else {
+            call.request(error, callback)
         }
-
-
     }
 
-    private  fun checkResponseCall() {
-
+    @Synchronized
+    private fun checkResponseCall() {
         if (!isCreated) {
             isCreated = true
             try {
@@ -81,42 +80,31 @@ class ResponseBuilderCall(private var builder: () -> ResponseCall) :
                 mThrowable = e
             }
         }
-
     }
 
-    private fun throwBuilderError(){
-        if (isCreated&&responseCall==null){
-            throw mThrowable?: KtHttpException("ResponseCall build error")
-        }
+    private fun getResponseCallOrThrow(): ResponseCall {
+        checkResponseCall()
+        val call = responseCall
+        return call ?: throw (mThrowable ?: KtHttpException("ResponseCall build error"))
     }
 
     override fun getOkhttpCall(): Call {
-        checkResponseCall()
-        throwBuilderError()
-        return responseCall!!.getOkhttpCall()
+        return getResponseCallOrThrow().getOkhttpCall()
     }
 
     override fun cancel() {
-        checkResponseCall()
-        throwBuilderError()
         responseCall?.cancel()
     }
 
     override fun isCancelled(): Boolean {
-        checkResponseCall()
-        throwBuilderError()
         return responseCall?.isCancelled() ?: false
     }
 
     override fun isExecuted(): Boolean {
-        checkResponseCall()
-        throwBuilderError()
         return responseCall?.isExecuted() ?: false
     }
 
     override fun getConfigs(): MutableMap<String, Any> {
-        checkResponseCall()
-        throwBuilderError()
-        return responseCall!!.getConfigs()
+        return getResponseCallOrThrow().getConfigs()
     }
 }

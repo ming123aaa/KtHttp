@@ -31,7 +31,7 @@ fun KtHttpConfig.onStringBody(
     isOverride: Boolean = false,
     block: (body: String, response: Response) -> Unit
 ) {
-    val stringTransformShow = object : StringTransformShow {
+    var stringTransformShow: StringTransformShow = object : StringTransformShow {
         override fun onStringBody(body: String, response: Response) {
             block(body, response)
         }
@@ -39,7 +39,7 @@ fun KtHttpConfig.onStringBody(
     if (!isOverride) {
         val old = getConfigForType<StringTransformShow>(key_onStringBody)
         if (old != null) {
-            object : StringTransformShow {
+            stringTransformShow = object : StringTransformShow {
                 override fun onStringBody(body: String, response: Response) {
                     old.onStringBody(body, response)
                     block(body, response)

@@ -86,11 +86,12 @@ fun HttpClient.download(
 ): HttpCall<File> {
     var lastIndex = 0L
     if (isContinueDownload && file.exists()) {  //开启断点下载 且 文件存在时
-        val randomAccessFile = RandomAccessFile(file, "rw")
-        lastIndex = if (randomAccessFile.length() > 1) {
-            randomAccessFile.length() - 1//避免文件已完全下载时 导致的服务端416错误
-        } else {
-            0
+        RandomAccessFile(file, "rw").use { randomAccessFile ->
+            lastIndex = if (randomAccessFile.length() > 1) {
+                randomAccessFile.length() - 1//避免文件已完全下载时 导致的服务端416错误
+            } else {
+                0
+            }
         }
     }
     return DownloadCall(
@@ -132,7 +133,7 @@ suspend inline fun <reified T> HttpClient.retryOnFailure(
     call: HttpClient.() -> HttpCall<T>
 ): T? {
     if (count <= 0 || time <= 0) {
-        throw Exception("count <= 0 or time <= 0")
+        throw IllegalArgumentException("count <= 0 or time <= 0")
     }
     var num = 0
     while (num < count - 1) {
@@ -156,7 +157,7 @@ suspend inline fun <reified T> httpCallRetryOnFailure(
     call: () -> HttpCall<T>
 ): T? {
     if (count <= 0 || time <= 0) {
-        throw Exception("count <= 0 or time <= 0")
+        throw IllegalArgumentException("count <= 0 or time <= 0")
     }
     var num = 0
     while (num < count - 1) {

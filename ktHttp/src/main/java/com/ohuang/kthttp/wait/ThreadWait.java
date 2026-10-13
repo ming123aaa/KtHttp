@@ -27,8 +27,8 @@ public class ThreadWait<T> {
         synchronized (lock) {
             try {
                 lock.wait(time);
-            } catch (InterruptedException ignored) {
-
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
             return result;
         }

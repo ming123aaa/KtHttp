@@ -35,7 +35,7 @@ fun HttpRequest.url(url: String, block: RequestParams.() -> Unit = {}) {
 /**
  * okhttp 请求的builder
  */
-fun HttpRequest.okhttpBuilder(block: okhttp3.Request.Builder.() -> Unit) {
+fun HttpRequest.okhttpBuilder(block: (okhttp3.Request.Builder) -> Unit) {
     requestBuilderBlock(block)
 }
 
@@ -63,6 +63,30 @@ fun HttpRequest.addHeaders(block: RequestParams.() -> Unit = {}) {
  */
 fun HttpRequest.get() {
     builder.get()
+}
+
+fun HttpRequest.put(body: RequestBody) {
+    builder.put(body)
+}
+
+fun HttpRequest.delete(body: RequestBody?) {
+    if (body != null) {
+        builder.delete(body)
+    } else {
+        builder.delete()
+    }
+}
+
+fun HttpRequest.delete() {
+    builder.delete()
+}
+
+fun HttpRequest.patch(body: RequestBody) {
+    builder.patch(body)
+}
+
+fun HttpRequest.head() {
+    builder.head()
 }
 
 /**

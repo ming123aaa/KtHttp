@@ -1,9 +1,10 @@
 package com.ohuang.kthttp
 
 import okhttp3.Request
+import java.util.Collections
 
 class KtHttpRequest(ktHttpConfigImpl:KtHttpConfigImpl, builder:Request.Builder) : HttpRequest(builder),KtHttpConfig {
-    internal var configs = HashMap<String, Any>()
+    internal var configs: MutableMap<String, Any> = Collections.synchronizedMap(HashMap<String, Any>())
     init {
         configs.putAll(ktHttpConfigImpl.configs)
     }
@@ -12,7 +13,6 @@ class KtHttpRequest(ktHttpConfigImpl:KtHttpConfigImpl, builder:Request.Builder) 
     }
 
     override fun getConfig(name: String): Any? {
-        if (!configs.containsKey(name)) return null
         return configs[name]
     }
 }

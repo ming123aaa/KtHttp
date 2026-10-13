@@ -2,6 +2,7 @@ package com.ohuang.kthttp.call
 
 import com.ohuang.kthttp.config.hookStringBody
 import com.ohuang.kthttp.config.onStringBody
+import com.ohuang.kthttp.config.resolveValidHttpCode
 import com.ohuang.kthttp.transform.ResponseConvert
 import com.ohuang.kthttp.transform.StringTransForm
 import com.ohuang.kthttp.transform.Transform
@@ -65,7 +66,7 @@ internal class TransformConvert<T>(val httpCall: HttpCall<*>, val transform: Tra
         value = transform.transform(string)
         try {
             response.close()
-        } catch (e: Throwable) {
+        } catch (_: Throwable) {
         }
         return value
     }
@@ -100,33 +101,27 @@ internal class ConvertCall<T>(
     KtHttpCall<T, Response>(call) {
     override fun request(error: (Throwable) -> Unit, callback: (T) -> Unit) {
         call.request(error = error, callback = {
-            checkHttpCode(it)
+            checkHttpCode(call.getConfigs(), it)
             var value: T? = null
             value = convert.convert(it)
             callback(value)
         })
     }
 
-    private fun checkHttpCode(response: Response) {
-
-        val isThrow = !response.isSuccessful
-
-        if (isThrow) {
-            var errorResponse = ErrorResponse(response = response, errorBody = null)
-            try {
-                errorResponse =
-                    ErrorResponse(
-                        response = response,
-                        errorBody = bufferResponseBody(response.body)
-                    )
-                response.close()
-            } finally {
-                throw ErrorResponseException(
-                    msg = "http code:${response.code}  $response",
-                    errorResponse = errorResponse
+    private fun checkHttpCode(configs: MutableMap<String, Any>, response: Response) {
+        if (!resolveValidHttpCode(configs, response.code)) {
+            val errorResponse = try {
+                ErrorResponse(
+                    response = response,
+                    errorBody = bufferResponseBody(response.body)
                 )
-
+            } finally {
+                response.close()
             }
+            throw ErrorResponseException(
+                msg = "http code:${response.code}  $response",
+                errorResponse = errorResponse
+            )
         }
     }
 }

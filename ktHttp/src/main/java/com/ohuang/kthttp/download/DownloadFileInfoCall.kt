@@ -44,10 +44,11 @@ open class DownloadFileInfoCall(
             errorResponse = ErrorResponse(response = response, errorBody = null)
         )
         val contentType = responseBody.contentType()
-        val totalSize = responseBody.contentLength() // 文件总大小
+        val totalSize = responseBody.contentLength()
 
-        responseBody.byteStream().close()
-        return FileInfo(contentLength = totalSize,fileName=fileName,contentType=contentType)
+        responseBody.byteStream().use { it.close() }
+        response.close()
+        return FileInfo(contentLength = totalSize, fileName = fileName, contentType = contentType)
     }
 
 

@@ -34,6 +34,12 @@ public class UriToFile {
             super(parcelFileDescriptor.getFileDescriptor());
             this.parcelFileDescriptor=parcelFileDescriptor;
         }
+
+        @Override
+        public void close() throws IOException {
+            super.close();
+            parcelFileDescriptor=null;
+        }
     }
 
     @Nullable

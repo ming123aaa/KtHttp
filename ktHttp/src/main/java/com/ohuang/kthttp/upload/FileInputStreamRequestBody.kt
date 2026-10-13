@@ -28,7 +28,6 @@ class FileInputStreamRequestBody(
 
     @Throws(IOException::class)
     override fun writeTo(sink: BufferedSink) {
-
         file.source().use { source ->
             val buffer: Buffer = Buffer()
             var uploaded: Long = 0

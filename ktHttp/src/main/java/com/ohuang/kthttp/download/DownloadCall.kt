@@ -106,38 +106,27 @@ open class DownloadCall(
             // 9. 确保资源关闭
             try {
                 fileChannel?.close()
-            } catch (e: Exception) {
-                // 忽略关闭异常
+            } catch (_: Exception) {
             }
             try {
                 randomAccessFile?.close()
-            } catch (e: Exception) {
-                // 忽略关闭异常
+            } catch (_: Exception) {
             }
         }
     }
 
     private fun getTotalSize(response: Response, totalSize: Long): Long = if (rangeStart > 0) {
-        // 如果 rangeStart > 0，表示是断点续传，总大小需要加上已下载的部分
-        // 但 contentLength() 返回的是本次请求的数据量，不是文件总大小。
-        // 这里需要根据实际情况处理。如果服务器支持 Range 请求并返回了 Content-Range，
-        // 可以解析出文件总大小。这里简化处理，假设我们知道总大小或者用 contentLength() 作为剩余部分。
-        // 更严谨的做法是解析 Content-Range header。
         val contentRange = response.header("Content-Range")
         if (contentRange != null && contentRange.startsWith("bytes ")) {
-            // 格式如: bytes 206-499/500 或 bytes 206-499/*
             val parts = contentRange.substring(6).split("/")
-            val rangePart = parts[0] // "206-499"
-            val totalPart = parts.getOrNull(1) // "500" 或 "*"
+            val totalPart = parts.getOrNull(1)
             if (totalPart != null && totalPart != "*") {
                 try {
-                    totalPart.toLong() // 这是文件的总大小
-                } catch (e: NumberFormatException) {
-                    // 如果解析失败，还是用 contentLength
+                    totalPart.toLong()
+                } catch (_: NumberFormatException) {
                     totalSize
                 }
             } else {
-                // 如果是 "*" 或者没有，我们只能知道剩余大小
                 totalSize
             }
         } else {

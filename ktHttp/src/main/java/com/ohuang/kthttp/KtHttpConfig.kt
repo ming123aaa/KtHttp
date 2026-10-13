@@ -1,5 +1,7 @@
 package com.ohuang.kthttp
 
+import java.util.Collections
+
 /**
  * 设置配置，可通过HttpCall.getConfigs()拿到
  */
@@ -17,7 +19,7 @@ inline fun <reified T> KtHttpConfig.getConfigForType(name: String): T? {
     return null
 }
 
-open class KtHttpConfigImpl(var configs: MutableMap<String, Any> = HashMap<String, Any>()) :
+open class KtHttpConfigImpl(var configs: MutableMap<String, Any> = Collections.synchronizedMap(HashMap<String, Any>())) :
     KtHttpConfig {
 
     override fun setConfig(name: String, value: Any) {
@@ -25,7 +27,6 @@ open class KtHttpConfigImpl(var configs: MutableMap<String, Any> = HashMap<Strin
     }
 
     override fun getConfig(name: String): Any? {
-        if (!configs.containsKey(name)) return null
         return configs[name]
     }
 }

@@ -16,8 +16,8 @@ fun interface StringTransformHook {
  *
  */
 fun KtHttpConfig.hookStringBody(block: (String) -> String) {
-    hookStringResponse(block={response->
-        block(response.body!!.string())
+    hookStringResponse(block = { response ->
+        block(response.body?.string() ?: "")
     })
 }
 
@@ -38,5 +38,5 @@ internal fun <T> HttpCall<T>.hookStringBody(response: Response): String {
     if (logString is StringTransformHook) {
         return logString.hook(response)
     }
-    return response.body!!.string()
+    return response.body?.string() ?: ""
 }

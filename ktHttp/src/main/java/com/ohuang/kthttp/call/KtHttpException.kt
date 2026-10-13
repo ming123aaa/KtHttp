@@ -5,38 +5,30 @@ import okhttp3.Response
 import okhttp3.ResponseBody
 
 
-open class KtHttpException(msg: String) : RuntimeException(msg) {
+open class KtHttpException(msg: String, cause: Throwable? = null) : RuntimeException(msg, cause)
 
-    open fun close() {}
-
-}
-
+/**
+ * HTTP 错误响应异常，携带完整的响应信息
+ *
+ * 注意：调用 [errorBodyString] 会消费并关闭 response body，
+ * 之后再次调用返回缓存值，但 [raw] 返回的 Response 可能已关闭。
+ */
 open class ErrorResponseException(msg: String, val errorResponse: ErrorResponse) :
     KtHttpException(msg) {
 
-    fun code(): Int {
-        return errorResponse.code()
-    }
+    fun code(): Int = errorResponse.code()
+    fun httpMessage(): String = errorResponse.message()
+    fun headers(): Headers = errorResponse.headers()
+    fun url(): String = errorResponse.url()
+    fun errorBodyString(): String = errorResponse.errorBodyString()
 
-    fun httpMessage(): String {
-        return errorResponse.message()
-    }
-
-    fun errorBodyString(): String {
-        return errorResponse.errorBodyString()
-    }
-
-    override fun close() {
+    fun close() {
         errorResponse.close()
     }
-
 }
 
 
-class EmptyBodyException(msg: String, errorResponse: ErrorResponse) : ErrorResponseException(
-    msg,
-    errorResponse
-)
+class EmptyBodyException(msg: String, errorResponse: ErrorResponse) : ErrorResponseException(msg, errorResponse)
 
 /**
  * 错误响应
@@ -45,46 +37,33 @@ class ErrorResponse(
     private val response: Response,
     val errorBody: ResponseBody?
 ) {
-    /**
-     * 原始响应
-     */
-    fun raw(): Response {
-        return response
-    }
+    fun raw(): Response = response
 
-    fun url(): String {
-        return response.request.url.toString()
-    }
+    fun url(): String = response.request.url.toString()
 
-    fun code(): Int {
-        return response.code
-    }
+    fun code(): Int = response.code
 
-    fun message(): String {
-        return response.message
-    }
+    fun message(): String = response.message
 
-    fun headers(): Headers {
-        return response.headers
-    }
+    fun headers(): Headers = response.headers
 
-    private var errorBodyString: String? = null
+    @Volatile
+    private var errorBodyStringCache: String? = null
 
     /**
-     * 错误响应体内容
+     * 错误响应体内容。首次调用会消费 body 并缓存，后续返回缓存值。
      */
     fun errorBodyString(): String {
-        if (errorBodyString != null) {
-            return errorBodyString!!
-        }
+        val cached = errorBodyStringCache
+        if (cached != null) return cached
         try {
-            errorBodyString = errorBody?.string() ?: ""
-            close()
-        } catch (e: Throwable) {
-
+            val body = errorBody?.string() ?: ""
+            response.close()
+            errorBodyStringCache = body
+            return body
+        } catch (_: Throwable) {
         }
-        return errorBodyString ?: ""
-
+        return ""
     }
 
     fun close() {
@@ -94,5 +73,4 @@ class ErrorResponse(
     override fun toString(): String {
         return response.toString()
     }
-
 }

@@ -35,13 +35,17 @@ inline fun <reified T> gsonTransForm(): Transform<T> {
     return getGsonTransForm(getGsonTypeToken<T>())
 }
 
-internal var ktHttp_mGson: Gson = Gson()
+@Volatile internal var ktHttp_mGson: Gson = Gson()
 
 /**
  * 设置gson
  */
 fun gsonTransFormSetGson(gson: Gson) {
     ktHttp_mGson = gson
+}
+
+fun gsonTransFormConfig(config:(Gson)->Gson){
+    ktHttp_mGson=config(ktHttp_mGson)
 }
 
 
